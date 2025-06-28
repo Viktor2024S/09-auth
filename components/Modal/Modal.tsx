@@ -2,46 +2,37 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import NoteForm from "../NoteForm/NoteForm";
-import css from "./NoteModal.module.css";
+import { useRouter } from "next/navigation";
+import css from "./Modal.module.css";
 
-interface NoteModalProps {
-  onClose: () => void;
+interface ModalProps {
+  children: React.ReactNode;
 }
 
-export default function NoteModal({ onClose }: NoteModalProps) {
+export default function Modal({ children }: ModalProps) {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        router.back();
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
-
     document.body.style.overflow = "hidden";
-
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "auto";
     };
-  }, [onClose]);
-
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
+  }, [router]);
 
   return mounted
     ? createPortal(
-        <div className={css.backdrop} onClick={handleBackdropClick}>
-          <div className={css.modal}>
-            <NoteForm onClose={onClose} />
+        <div className={css.backdrop} onClick={() => router.back()}>
+          <div className={css.modal} onClick={(e) => e.stopPropagation()}>
+            {children}
           </div>
         </div>,
         document.body

@@ -20,7 +20,8 @@ interface PaginatedNotesResponse {
 
 export const fetchNotes = async (
   page: number = 1,
-  query: string = ""
+  query: string = "",
+  tag?: string | null
 ): Promise<PaginatedNotesResponse> => {
   const params = new URLSearchParams({
     page: String(page),
@@ -28,6 +29,10 @@ export const fetchNotes = async (
   });
   if (query) {
     params.append("search", query);
+  }
+  // Додаємо тег до запиту, тільки якщо він не 'All'
+  if (tag && tag !== "All") {
+    params.append("tag", tag);
   }
   const response: AxiosResponse<PaginatedNotesResponse> = await apiClient.get(
     `/notes?${params.toString()}`
@@ -40,6 +45,7 @@ export const fetchNoteById = async (id: number): Promise<Note> => {
   return response.data;
 };
 
+// ... решта функцій: createNote, deleteNote ...
 export const createNote = async (noteData: NoteData): Promise<Note> => {
   const response: AxiosResponse<Note> = await apiClient.post(
     "/notes",

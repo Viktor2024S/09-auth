@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
-import "modern-normalize";
+import "modern-normalize/modern-normalize.css";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -26,7 +26,6 @@ export default function RootLayout({
           <main className="main-content">{children}</main>
           <Footer />
         </TanStackProvider>
-        <div id="modal-root"></div>
       </body>
     </html>
   );
