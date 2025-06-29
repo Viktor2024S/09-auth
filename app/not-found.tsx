@@ -1,6 +1,6 @@
 import Link from "next/link";
 //
-import css from "./LayoutNotes.module.css"; //==---???
+import css from "./notes/filter/LayoutNotes.module.css";
 //
 
 export default function NotFound() {

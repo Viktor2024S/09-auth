@@ -10,7 +10,7 @@ export default function FilterLayout({
   return (
     <div className={css.container}>
       <aside className={css.sidebar}>{sidebar}</aside>
-      <div className={css.content}>{children}</div>
+      <section className={css.content}>{children}</section>
     </div>
   );
 }

@@ -9,6 +9,7 @@ import NoteList from "@/components/NoteList/NoteList";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
 import Loader from "@/components/Loader/Loader";
+
 import css from "./Notes.module.css";
 
 interface NotesClientProps {
@@ -51,14 +52,20 @@ export default function NotesClient({
   return (
     <div className={css.container}>
       <Toaster position="top-right" reverseOrder={false} />
+
       <header className={css.toolbar}>
         <SearchBox value={searchQuery} onChange={handleSearchChange} />
+
         <button className={css.button}>Create note +</button>
       </header>
 
       {isLoading && <Loader />}
 
-      {notes.length > 0 ? <NoteList notes={notes} /> : <p>No notes found.</p>}
+      {notes.length > 0 ? (
+        <NoteList notes={notes} />
+      ) : (
+        <p>No notes found for this filter.</p>
+      )}
 
       {totalPages > 1 && !isLoading && (
         <div className={css.paginationContainer}>
