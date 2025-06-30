@@ -45,7 +45,6 @@ export const fetchNoteById = async (id: number): Promise<Note> => {
   return response.data;
 };
 
-// ... решта функцій: createNote, deleteNote ...
 export const createNote = async (noteData: NoteData): Promise<Note> => {
   const response: AxiosResponse<Note> = await apiClient.post(
     "/notes",
