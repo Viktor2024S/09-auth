@@ -1,11 +1,13 @@
+"use client";
+
 import { Note } from "@/types/note";
-import css from "./NotePreview.module.css";
+import css from "@/components/NotePreview/NotePreview.module.css";
 
 interface NotePreviewProps {
   note: Note;
 }
 
-export default function NotePreview({ note }: NotePreviewProps) {
+export default function NotePreviewClient({ note }: NotePreviewProps) {
   return (
     <div className={css.container}>
       <div className={css.header}>
