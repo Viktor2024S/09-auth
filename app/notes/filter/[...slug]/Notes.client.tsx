@@ -9,12 +9,14 @@ import { Note } from "@/types/note";
 import NoteList from "@/components/NoteList/NoteList";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
+import Modal from "@/components/Modal/Modal";
+import NoteForm from "@/components/NoteForm/NoteForm";
 import Loader from "@/components/Loader/Loader";
-
 import css from "./Notes.module.css";
 
 interface NotesClientProps {
   initialData: {
+    // notes: any[];
     notes: Note[];
     totalPages: number;
   };
@@ -28,6 +30,8 @@ export default function NotesClient({
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
+
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -53,15 +57,15 @@ export default function NotesClient({
   return (
     <div className={css.container}>
       <Toaster position="top-right" reverseOrder={false} />
-
       <header className={css.toolbar}>
         <SearchBox value={searchQuery} onChange={handleSearchChange} />
 
-        <button className={css.button}>Create note +</button>
+        <button className={css.button} onClick={() => setCreateModalOpen(true)}>
+          Create note +
+        </button>
       </header>
 
       {isLoading && <Loader />}
-
       {notes.length > 0 ? (
         <NoteList notes={notes} />
       ) : (
@@ -76,6 +80,12 @@ export default function NotesClient({
             currentPage={currentPage}
           />
         </div>
+      )}
+
+      {isCreateModalOpen && (
+        <Modal onClose={() => setCreateModalOpen(false)}>
+          <NoteForm onClose={() => setCreateModalOpen(false)} />
+        </Modal>
       )}
     </div>
   );
