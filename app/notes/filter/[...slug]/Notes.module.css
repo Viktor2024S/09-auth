@@ -30,3 +30,9 @@
 .button:hover {
   background-color: #0b5ed7;
 }
+
+.paginationContainer {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+}

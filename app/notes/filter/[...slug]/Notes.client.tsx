@@ -16,7 +16,6 @@ import css from "./Notes.module.css";
 
 interface NotesClientProps {
   initialData: {
-    // notes: any[];
     notes: Note[];
     totalPages: number;
   };
