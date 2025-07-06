@@ -13,7 +13,6 @@ export default async function InterceptedNotePage({
 }) {
   const { id } = await params;
   const parsedId = Number(id);
-
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({
