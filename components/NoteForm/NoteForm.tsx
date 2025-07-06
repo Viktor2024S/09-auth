@@ -6,12 +6,39 @@ import { createNoteAction } from "@/lib/actions";
 import { NoteData, Tag } from "@/types/note";
 import css from "./NoteForm.module.css";
 import toast from "react-hot-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useFormStatus } from "react-dom";
 
 const noteTags: Tag[] = ["Todo", "Work", "Personal", "Meeting", "Shopping"];
 
 export default function NoteForm() {
   const router = useRouter();
   const { draft, setDraft, clearDraft } = useNoteStore();
+  const queryClient = useQueryClient();
+
+  const createNoteMutation = useMutation({
+    mutationFn: async (noteData: NoteData) => {
+      return createNoteAction(noteData);
+    },
+    onMutate: () => {
+      toast.loading("Creating note...");
+    },
+    onSuccess: (result) => {
+      toast.dismiss();
+      if (result?.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Note created successfully!");
+        clearDraft();
+        queryClient.invalidateQueries({ queryKey: ["notes"] });
+        router.back();
+      }
+    },
+    onError: (error: Error) => {
+      toast.dismiss();
+      toast.error(error.message || "Failed to create note.");
+    },
+  });
 
   const handleFieldChange = (
     e: React.ChangeEvent<
@@ -21,22 +48,18 @@ export default function NoteForm() {
     setDraft(e.target.name as keyof NoteData, e.target.value);
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    toast.loading("Creating note...");
-    const result = await createNoteAction(draft);
-    toast.dismiss();
+  const formAction = async (formData: FormData) => {
+    const title = formData.get("title") as string;
+    const content = formData.get("content") as string;
+    const tag = formData.get("tag") as Tag;
 
-    if (result?.error) {
-      toast.error(result.error);
-    } else {
-      toast.success("Note created successfully!");
-      clearDraft();
-    }
+    createNoteMutation.mutate({ title, content, tag });
   };
 
+  const { pending } = useFormStatus();
+
   return (
-    <form className={css.form} onSubmit={handleSubmit}>
+    <form className={css.form} action={formAction}>
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
         <input
@@ -80,11 +103,12 @@ export default function NoteForm() {
           type="button"
           onClick={() => router.back()}
           className={css.cancelButton}
+          disabled={pending}
         >
           Cancel
         </button>
-        <button type="submit" className={css.submitButton}>
-          Create Note
+        <button type="submit" className={css.submitButton} disabled={pending}>
+          {pending ? "Creating..." : "Create Note"}
         </button>
       </div>
     </form>

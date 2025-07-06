@@ -13,7 +13,35 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const note = await fetchNoteById(Number(id));
+
+  let note;
+  try {
+    note = await fetchNoteById(Number(id));
+  } catch (error) {
+    console.error(`Failed to fetch note for metadata for ID: ${id}`, error);
+    return {
+      title: "Note Not Found",
+      description: "The requested note could not be found.",
+      openGraph: {
+        title: "Note Not Found | NoteHub",
+        description: "The requested note could not be found on NoteHub.",
+        url: `https://08-zustand-pi-six.vercel.app/notes/${id}`,
+        images: [
+          {
+            url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+            width: 1200,
+            height: 630,
+            alt: "NoteHub Default Image",
+          },
+        ],
+        locale: "en_US",
+        type: "website",
+      },
+    };
+  }
+
+  const baseUrl = "https://08-zustand-pi-six.vercel.app";
+  const currentNoteUrl = `${baseUrl}/notes/${id}`;
 
   return {
     title: note.title,
@@ -21,6 +49,17 @@ export async function generateMetadata({
     openGraph: {
       title: note.title,
       description: note.content.substring(0, 160),
+      url: currentNoteUrl,
+      images: [
+        {
+          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+          width: 1200,
+          height: 630,
+          alt: `NoteHub - ${note.title}`,
+        },
+      ],
+      locale: "en_US",
+      type: "website",
     },
   };
 }
