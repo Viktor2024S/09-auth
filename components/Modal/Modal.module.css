@@ -17,6 +17,7 @@
   border-radius: 8px;
   max-width: 500px;
   width: 100%;
-  position: relative;
+  /* position: relative; */
+  position: fixed;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }

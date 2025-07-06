@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "NoteHub - Your Personal Notes Manager",
     description: "Organize your thoughts, tasks, and ideas with NoteHub.",
-    url: "https://ac.goit.global/", // !!! Важливо: замініть на URL вашого розгорнутого сайту
+    url: "https://08-zustand-pi-six.vercel.app/",
     siteName: "NoteHub",
     images: [
       {

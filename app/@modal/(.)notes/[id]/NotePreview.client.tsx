@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { fetchNoteById } from "@/lib/api";
 import Modal from "@/components/Modal/Modal";
 import Loader from "@/components/Loader/Loader";
@@ -13,7 +13,7 @@ function NoteDetails({ note }: { note: Note }) {
     <div className={css.container}>
       <div className={css.header}>
         <h2 className={css.title}>{note.title}</h2>
-        <span className={css.tag}>{note.tag}</span>
+        {note.tag && <span className={css.tag}>{note.tag}</span>}
       </div>
       <p className={css.content}>{note.content}</p>
       <p className={css.date}>
@@ -24,7 +24,6 @@ function NoteDetails({ note }: { note: Note }) {
 }
 
 export default function NotePreviewClient() {
-  const router = useRouter();
   const params = useParams();
   const id = Number(params.id);
 
@@ -40,7 +39,7 @@ export default function NotePreviewClient() {
   });
 
   return (
-    <Modal onClose={() => router.back()}>
+    <Modal>
       {isLoading && <Loader />}
       {isError && <p>Could not fetch note details.</p>}
       {note && <NoteDetails note={note} />}
