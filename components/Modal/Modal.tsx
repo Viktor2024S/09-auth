@@ -40,13 +40,15 @@ export default function Modal({ children }: ModalProps) {
 
   return mounted
     ? createPortal(
-        <div className={css.backdrop} onClick={() => router.back()}>
-          <div className={css.modal} onClick={(e) => e.stopPropagation()}>
-            <button className={css.closeButton} onClick={() => router.back()}>
-              {/* &times; */}
-              Close
-            </button>
-            {children}
+        <div className={css.fixed}>
+          <div className={css.backdrop} onClick={() => router.back()}>
+            <div className={css.modal} onClick={(e) => e.stopPropagation()}>
+              <button className={css.closeButton} onClick={() => router.back()}>
+                {/* &times; */}
+                Close
+              </button>
+              {children}
+            </div>
           </div>
         </div>,
         document.body
