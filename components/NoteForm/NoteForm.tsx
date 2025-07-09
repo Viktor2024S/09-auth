@@ -1,41 +1,38 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+
 import { useNoteStore } from "@/lib/store/noteStore";
 import { createNoteAction } from "@/lib/actions";
 import { NoteData, Tag } from "@/types/note";
 import css from "./NoteForm.module.css";
-import toast from "react-hot-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useFormStatus } from "react-dom";
 
 const noteTags: Tag[] = ["Todo", "Work", "Personal", "Meeting", "Shopping"];
 
 export default function NoteForm() {
   const router = useRouter();
-  const { draft, setDraft, clearDraft } = useNoteStore();
   const queryClient = useQueryClient();
+  const { draft, setDraft, clearDraft } = useNoteStore();
 
   const createNoteMutation = useMutation({
-    mutationFn: async (noteData: NoteData) => {
-      return createNoteAction(noteData);
-    },
-    onMutate: () => {
-      toast.loading("Creating note...");
-    },
+    mutationFn: createNoteAction,
     onSuccess: (result) => {
       toast.dismiss();
       if (result?.error) {
         toast.error(result.error);
       } else {
-        toast.success("Note created successfully!");
+        toast.success("Note created successfully! Redirecting...");
         clearDraft();
         queryClient.invalidateQueries({ queryKey: ["notes"] });
-        router.back();
       }
     },
     onError: (error: Error) => {
       toast.dismiss();
+      if (error.message === "NEXT_REDIRECT") {
+        return;
+      }
       toast.error(error.message || "Failed to create note.");
     },
   });
@@ -48,18 +45,15 @@ export default function NoteForm() {
     setDraft(e.target.name as keyof NoteData, e.target.value);
   };
 
-  const formAction = async (formData: FormData) => {
-    const title = formData.get("title") as string;
-    const content = formData.get("content") as string;
-    const tag = formData.get("tag") as Tag;
-
-    createNoteMutation.mutate({ title, content, tag });
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    createNoteMutation.mutate(draft);
   };
 
-  const { pending } = useFormStatus();
+  const { isPending } = createNoteMutation;
 
   return (
-    <form className={css.form} action={formAction}>
+    <form className={css.form} onSubmit={handleSubmit}>
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
         <input
@@ -70,6 +64,7 @@ export default function NoteForm() {
           onChange={handleFieldChange}
           className={css.input}
           required
+          disabled={isPending}
         />
       </div>
       <div className={css.formGroup}>
@@ -80,6 +75,7 @@ export default function NoteForm() {
           value={draft.content}
           onChange={handleFieldChange}
           className={css.textarea}
+          disabled={isPending}
         />
       </div>
       <div className={css.formGroup}>
@@ -90,6 +86,7 @@ export default function NoteForm() {
           value={draft.tag}
           onChange={handleFieldChange}
           className={css.select}
+          disabled={isPending}
         >
           {noteTags.map((tag) => (
             <option key={tag} value={tag}>
@@ -103,12 +100,12 @@ export default function NoteForm() {
           type="button"
           onClick={() => router.back()}
           className={css.cancelButton}
-          disabled={pending}
+          disabled={isPending}
         >
           Cancel
         </button>
-        <button type="submit" className={css.submitButton} disabled={pending}>
-          {pending ? "Creating..." : "Create Note"}
+        <button type="submit" className={css.submitButton} disabled={isPending}>
+          {isPending ? "Creating..." : "Create Note"}
         </button>
       </div>
     </form>

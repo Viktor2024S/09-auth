@@ -15,3 +15,10 @@ body {
   margin: 0 auto;
   padding: 0 15px;
 }
+
+.modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
