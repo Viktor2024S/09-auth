@@ -21,7 +21,6 @@ export async function generateMetadata({
     note = await fetchNoteById(id);
   } catch (error: unknown) {
     console.error(`Failed to fetch note for metadata for ID: ${id}`, error);
-
     return {
       title: "Note Not Found",
       description: "The requested note could not be found.",
@@ -94,6 +93,7 @@ export default async function NoteDetailsPage({
   const queryClient = new QueryClient();
   const parsedId = Number(params.id);
 
+  // Prefetch data for TanStack Query on the server
   await queryClient.prefetchQuery({
     queryKey: ["note", parsedId],
     queryFn: () => fetchNoteById(parsedId),
