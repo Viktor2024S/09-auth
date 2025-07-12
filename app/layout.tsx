@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "NoteHub - Your Personal Notes Manager",
     description: "Organize your thoughts, tasks, and ideas with NoteHub.",
-    url: "https://09-auth-pi.vercel.app/", // ! Important: Update this with my Vercel URL
+    url: "https://09-auth-pi.vercel.app/", // ! My Vercel URL
     siteName: "NoteHub",
     images: [
       {

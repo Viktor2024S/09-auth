@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createNote } from "./api/api";
+import { createNote } from "./api/serverApi";
 import { NoteData } from "@/types/note";
 
 export async function createNoteAction(noteData: NoteData) {

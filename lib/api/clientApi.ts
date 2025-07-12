@@ -1,6 +1,7 @@
 import instance from "./api";
 import { Note, NoteData } from "@/types/note";
 import { User, AuthRequest, AuthResponse } from "@/types/user";
+import { AxiosError } from "axios";
 
 // --- Note-related functions ---
 export const createNote = async (noteData: NoteData): Promise<Note> => {
@@ -11,6 +12,20 @@ export const createNote = async (noteData: NoteData): Promise<Note> => {
 export const deleteNote = async (noteId: number): Promise<Note> => {
   const { data } = await instance.delete<Note>(`/notes/${noteId}`);
   return data;
+};
+
+// ***
+export const fetchNoteById = async (id: number): Promise<Note | null> => {
+  try {
+    const { data } = await instance.get<Note>(`/notes/${id}`);
+    return data;
+  } catch (error) {
+    if (error instanceof AxiosError && error.response?.status === 404) {
+      return null; // Return null if note is not found
+    }
+    console.error(`Error fetching note by ID ${id} client-side:`, error);
+    throw error; // Re-throw other errors
+  }
 };
 
 // --- Auth-related functions ---

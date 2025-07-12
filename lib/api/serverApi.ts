@@ -1,12 +1,30 @@
 import { cookies } from "next/headers";
 import instance from "./api";
-import { Note } from "@/types/note";
+import { Note, NoteData } from "@/types/note"; // Import NoteData for createNote
 import { User } from "@/types/user";
+import { AxiosError } from "axios"; // Import AxiosError for type safety
 
 interface PaginatedNotesResponse {
   notes: Note[];
   totalPages: number;
 }
+
+// Function to create a new note (added for server-side actions like createNoteAction)
+export const createNote = async (noteData: NoteData): Promise<Note> => {
+  try {
+    const cookie = cookies().toString();
+    const { data } = await instance.post<Note>("/notes", noteData, {
+      headers: {
+        Cookie: cookie,
+      },
+    });
+    return data;
+  } catch (error: unknown) {
+    // Explicitly type error as unknown
+    console.error("Error creating note server-side:", error);
+    throw error; // Re-throw to be caught by the calling server action
+  }
+};
 
 export const fetchNotes = async (
   page: number = 1,
@@ -20,22 +38,37 @@ export const fetchNotes = async (
   if (query) params.append("search", query);
   if (tag && tag !== "All") params.append("tag", tag);
 
-  const cookie = cookies().toString();
-  const { data } = await instance.get<PaginatedNotesResponse>(
-    `/notes?${params.toString()}`,
-    {
-      headers: { Cookie: cookie },
-    }
-  );
-  return data;
+  try {
+    const cookie = cookies().toString();
+    const { data } = await instance.get<PaginatedNotesResponse>(
+      `/notes?${params.toString()}`,
+      {
+        headers: { Cookie: cookie },
+      }
+    );
+    return data;
+  } catch (error: unknown) {
+    // Explicitly type error as unknown
+    console.error("Error fetching notes server-side:", error);
+    return { notes: [], totalPages: 0 }; // Return empty data on error
+  }
 };
 
-export const fetchNoteById = async (id: number): Promise<Note> => {
-  const cookie = cookies().toString();
-  const { data } = await instance.get<Note>(`/notes/${id}`, {
-    headers: { Cookie: cookie },
-  });
-  return data;
+export const fetchNoteById = async (id: number): Promise<Note | null> => {
+  try {
+    const cookie = cookies().toString();
+    const { data } = await instance.get<Note>(`/notes/${id}`, {
+      headers: { Cookie: cookie },
+    });
+    return data;
+  } catch (error: unknown) {
+    // Explicitly type error as unknown
+    console.error(`Error fetching note by ID ${id} server-side:`, error);
+    if (error instanceof AxiosError && error.response?.status === 404) {
+      return null; // Return null if note not found
+    }
+    throw error; // Re-throw other errors
+  }
 };
 
 export const getServerSideProfile = async (): Promise<User | null> => {
@@ -47,7 +80,8 @@ export const getServerSideProfile = async (): Promise<User | null> => {
       headers: { Cookie: cookie },
     });
     return data;
-  } catch (error) {
+  } catch (error: unknown) {
+    // Explicitly type error as unknown
     console.error("Failed to get server side profile:", error);
     return null;
   }

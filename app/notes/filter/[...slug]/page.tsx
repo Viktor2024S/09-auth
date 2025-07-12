@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { fetchNotes } from "@/lib/api/api";
+import { fetchNotes } from "@/lib/api/serverApi";
 import NotesClient from "./Notes.client";
 export async function generateMetadata({
   params,
@@ -11,7 +11,7 @@ export async function generateMetadata({
   const pageTitle = tag === "All" ? "All Notes" : `Notes with tag: ${tag}`;
   const pageDescription = `Browse and manage your notes. Current filter: ${tag}.`;
 
-  const baseUrl = "https://08-zustand-pi-six.vercel.app";
+  const baseUrl = "https://09-auth-pi.vercel.app/";
   const currentUrl = `${baseUrl}/notes/filter/${tag}`;
 
   return {
