@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { fetchNotes } from "@/lib/api";
+import { fetchNotes } from "@/lib/api/api";
 import NotesClient from "./Notes.client";
 export async function generateMetadata({
   params,

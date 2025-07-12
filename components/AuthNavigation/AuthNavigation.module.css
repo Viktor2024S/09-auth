@@ -1,0 +1,42 @@
+.navigationItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navigationLink {
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+}
+
+.navigationLink:hover {
+  color: #adb5bd;
+}
+
+.userEmail {
+  color: #adb5bd;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.logoutButton {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.logoutButton:hover {
+  background-color: #c82333;
+}
+
+.logoutButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}

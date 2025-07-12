@@ -3,6 +3,7 @@ import { Roboto } from "next/font/google";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
+import AuthProvider from "@/components/AuthProvider/AuthProvider";
 import "modern-normalize/modern-normalize.css";
 import "./globals.css";
 
@@ -19,11 +20,11 @@ export const metadata: Metadata = {
     default: "NoteHub - Your Personal Notes Manager",
   },
   description:
-    "A simple and efficient application for managing your personal notes. Keep your thoughts organized and accessible.",
+    "A simple and efficient application for managing your personal notes.",
   openGraph: {
     title: "NoteHub - Your Personal Notes Manager",
     description: "Organize your thoughts, tasks, and ideas with NoteHub.",
-    url: "https://08-zustand-pi-six.vercel.app/",
+    url: "https://your-vercel-deployment-url.com", // ! Important: Update this with your Vercel URL
     siteName: "NoteHub",
     images: [
       {
@@ -48,10 +49,12 @@ export default function RootLayout({
     <html lang="en" className={`${roboto.variable}`}>
       <body>
         <TanStackProvider>
-          <Header />
-          <main className="main-content">{children}</main>
-          <Footer />
-          <div className="modal-container">{modal}</div>
+          <AuthProvider>
+            <Header />
+            <main className="main-content">{children}</main>
+            <Footer />
+            <div className="modal-container">{modal}</div>
+          </AuthProvider>
         </TanStackProvider>
       </body>
     </html>
