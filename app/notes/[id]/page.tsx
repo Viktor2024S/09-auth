@@ -7,93 +7,96 @@ import {
 import { fetchNoteById } from "@/lib/api/serverApi";
 import NoteDetailsClient from "./NoteDetails.client";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { id: string };
-}): Promise<Metadata> {
-  const id = Number(params.id);
-  const baseUrl = "https://your-vercel-app-url.app";
-  const currentNoteUrl = `${baseUrl}/notes/${id}`;
-
-  let note;
-  try {
-    note = await fetchNoteById(id);
-  } catch (error: unknown) {
-    console.error(`Failed to fetch note for metadata for ID: ${id}`, error);
-    return {
-      title: "Note Not Found",
-      description: "The requested note could not be found.",
-      openGraph: {
-        title: "Note Not Found | NoteHub",
-        description: "The requested note could not be found on NoteHub.",
-        url: `${baseUrl}/notes/${id}`,
-        images: [
-          {
-            url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
-            width: 1200,
-            height: 630,
-            alt: "NoteHub Default Image",
-          },
-        ],
-        locale: "en_US",
-        type: "website",
-      },
-    };
-  }
-
-  if (!note) {
-    return {
-      title: "Note Not Found",
-      description: "The requested note could not be found.",
-      openGraph: {
-        title: "Note Not Found | NoteHub",
-        description: "The requested note could not be found on NoteHub.",
-        url: `${baseUrl}/notes/${id}`,
-        images: [
-          {
-            url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
-            width: 1200,
-            height: 630,
-            alt: "NoteHub Default Image",
-          },
-        ],
-        locale: "en_US",
-        type: "website",
-      },
-    };
-  }
-
-  return {
-    title: note.title,
-    description: note.content.substring(0, 160),
-    openGraph: {
-      title: note.title,
-      description: note.content.substring(0, 160),
-      url: currentNoteUrl,
-      images: [
-        {
-          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
-          width: 1200,
-          height: 630,
-          alt: `NoteHub - ${note.title}`,
-        },
-      ],
-      locale: "en_US",
-      type: "website",
-    },
-  };
+interface PageProps {
+  params: Promise<{ id: string }>;
 }
 
-export default async function NoteDetailsPage({
+export async function generateMetadata({
   params,
-}: {
-  params: { id: string };
-}) {
-  const queryClient = new QueryClient();
-  const parsedId = Number(params.id);
+}: PageProps): Promise<Metadata> {
+  const { id: idString } = await params;
+  const parsedId = Number(idString);
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://your-vercel-app-url.app";
+  const currentNoteUrl = `${baseUrl}/notes/${parsedId}`;
 
-  // Prefetch data for TanStack Query on the server
+  try {
+    const note = await fetchNoteById(parsedId);
+
+    if (!note) {
+      return {
+        title: "Note Not Found",
+        description: "The requested note could not be found.",
+        openGraph: {
+          title: "Note Not Found | NoteHub",
+          description: "The requested note could not be found on NoteHub.",
+          url: currentNoteUrl,
+          images: [
+            {
+              url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+              width: 1200,
+              height: 630,
+              alt: "NoteHub Default Image",
+            },
+          ],
+          locale: "en_US",
+          type: "website",
+        },
+      };
+    }
+
+    return {
+      title: note.title,
+      description: note.content.substring(0, 160),
+      openGraph: {
+        title: note.title,
+        description: note.content.substring(0, 160),
+        url: currentNoteUrl,
+        images: [
+          {
+            url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+            width: 1200,
+            height: 630,
+            alt: `NoteHub - ${note.title}`,
+          },
+        ],
+        locale: "en_US",
+        type: "website",
+      },
+    };
+  } catch (error) {
+    console.error(
+      `Failed to fetch note for metadata (ID: ${parsedId}):`,
+      error
+    );
+    return {
+      title: "Note Not Found",
+      description: "The requested note could not be found.",
+      openGraph: {
+        title: "Note Not Found | NoteHub",
+        description: "The requested note could not be found on NoteHub.",
+        url: currentNoteUrl,
+        images: [
+          {
+            url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+            width: 1200,
+            height: 630,
+            alt: "NoteHub Default Image",
+          },
+        ],
+        locale: "en_US",
+        type: "website",
+      },
+    };
+  }
+}
+
+export default async function NoteDetailsPage({ params }: PageProps) {
+  const { id: idString } = await params;
+  const parsedId = Number(idString);
+
+  const queryClient = new QueryClient();
+
   await queryClient.prefetchQuery({
     queryKey: ["note", parsedId],
     queryFn: () => fetchNoteById(parsedId),

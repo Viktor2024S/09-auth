@@ -1,15 +1,14 @@
 import { cookies } from "next/headers";
 import instance from "./api";
-import { Note, NoteData } from "@/types/note"; // Import NoteData for createNote
+import { Note, NoteData } from "@/types/note";
 import { User } from "@/types/user";
-import { AxiosError } from "axios"; // Import AxiosError for type safety
+import { AxiosError } from "axios";
 
 interface PaginatedNotesResponse {
   notes: Note[];
   totalPages: number;
 }
 
-// Function to create a new note (added for server-side actions like createNoteAction)
 export const createNote = async (noteData: NoteData): Promise<Note> => {
   try {
     const cookie = cookies().toString();
@@ -20,9 +19,8 @@ export const createNote = async (noteData: NoteData): Promise<Note> => {
     });
     return data;
   } catch (error: unknown) {
-    // Explicitly type error as unknown
     console.error("Error creating note server-side:", error);
-    throw error; // Re-throw to be caught by the calling server action
+    throw error;
   }
 };
 
@@ -48,9 +46,8 @@ export const fetchNotes = async (
     );
     return data;
   } catch (error: unknown) {
-    // Explicitly type error as unknown
     console.error("Error fetching notes server-side:", error);
-    return { notes: [], totalPages: 0 }; // Return empty data on error
+    return { notes: [], totalPages: 0 };
   }
 };
 
@@ -62,12 +59,11 @@ export const fetchNoteById = async (id: number): Promise<Note | null> => {
     });
     return data;
   } catch (error: unknown) {
-    // Explicitly type error as unknown
     console.error(`Error fetching note by ID ${id} server-side:`, error);
     if (error instanceof AxiosError && error.response?.status === 404) {
-      return null; // Return null if note not found
+      return null;
     }
-    throw error; // Re-throw other errors
+    throw error;
   }
 };
 
@@ -81,7 +77,6 @@ export const getServerSideProfile = async (): Promise<User | null> => {
     });
     return data;
   } catch (error: unknown) {
-    // Explicitly type error as unknown
     console.error("Failed to get server side profile:", error);
     return null;
   }
