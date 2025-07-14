@@ -1,9 +1,25 @@
 import instance from "./api";
 import { Note, NoteData } from "@/types/note";
 import { User, AuthRequest, AuthResponse } from "@/types/user";
-import { AxiosError } from "axios";
 
-// --- Note-related functions ---
+// Note-related functions for client-side usage
+export const clientFetchNotes = async (
+  page: number = 1,
+  query: string = "",
+  tag?: string | null
+): Promise<{ notes: Note[]; totalPages: number }> => {
+  const params = new URLSearchParams({ page: String(page), perPage: "12" });
+  if (query) params.append("search", query);
+  if (tag && tag !== "All") params.append("tag", tag);
+  const { data } = await instance.get(`/notes?${params.toString()}`);
+  return data;
+};
+
+export const clientFetchNoteById = async (id: number): Promise<Note> => {
+  const { data } = await instance.get<Note>(`/notes/${id}`);
+  return data;
+};
+
 export const createNote = async (noteData: NoteData): Promise<Note> => {
   const { data } = await instance.post<Note>("/notes", noteData);
   return data;
@@ -14,21 +30,7 @@ export const deleteNote = async (noteId: number): Promise<Note> => {
   return data;
 };
 
-// ***
-export const fetchNoteById = async (id: number): Promise<Note | null> => {
-  try {
-    const { data } = await instance.get<Note>(`/notes/${id}`);
-    return data;
-  } catch (error) {
-    if (error instanceof AxiosError && error.response?.status === 404) {
-      return null; // Return null if note is not found
-    }
-    console.error(`Error fetching note by ID ${id} client-side:`, error);
-    throw error; // Re-throw other errors
-  }
-};
-
-// --- Auth-related functions ---
+// Auth & User functions
 export const registerUser = async (
   credentials: AuthRequest
 ): Promise<AuthResponse> => {
@@ -58,7 +60,6 @@ export const getSession = async (): Promise<AuthResponse> => {
   return data;
 };
 
-// --- User-related functions ---
 export const getMyProfile = async (): Promise<User> => {
   const { data } = await instance.get<User>("/users/me");
   return data;

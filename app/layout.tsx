@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     default: "NoteHub - Your Personal Notes Manager",
   },
   description:
-    "A simple and efficient application for managing your personal notes.",
+    "A simple and efficient application for managing personal notes.",
   openGraph: {
     title: "NoteHub - Your Personal Notes Manager",
     description: "Organize your thoughts, tasks, and ideas with NoteHub.",

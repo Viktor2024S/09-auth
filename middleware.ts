@@ -25,6 +25,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // This matcher ensures the middleware runs on all paths except for static assets and internal Next.js paths.
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

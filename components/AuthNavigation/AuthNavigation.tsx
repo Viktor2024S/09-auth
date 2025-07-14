@@ -1,5 +1,4 @@
 "use client";
-
 import { useAuthStore } from "@/lib/store/authStore";
 import { useMutation } from "@tanstack/react-query";
 import { logoutUser } from "@/lib/api/clientApi";

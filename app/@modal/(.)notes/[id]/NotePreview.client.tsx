@@ -1,48 +1,34 @@
 "use client";
-
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import { fetchNoteById } from "@/lib/api/clientApi";
+import { clientFetchNoteById } from "@/lib/api/clientApi";
 import Modal from "@/components/Modal/Modal";
 import Loader from "@/components/Loader/Loader";
-import { Note } from "@/types/note";
-import css from "@/components/NotePreview/NotePreview.module.css";
+import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
+import css from "./NotePreview.module.css";
 
-function NoteDetails({ note }: { note: Note }) {
-  return (
-    <div className={css.container}>
-      <div className={css.header}>
-        <h2 className={css.title}>{note.title}</h2>
-        {note.tag && <span className={css.tag}>{note.tag}</span>}
-      </div>
-      <p className={css.content}>{note.content}</p>
-      <p className={css.date}>
-        Created at: {new Date(note.createdAt).toLocaleDateString()}
-      </p>
-    </div>
-  );
-}
-
-export default function NotePreviewClient() {
-  const params = useParams();
-  const id = Number(params.id);
-
+export default function NotePreviewClient({ noteId }: { noteId: number }) {
   const {
     data: note,
     isLoading,
     isError,
+    error,
   } = useQuery({
-    queryKey: ["note", id],
-    queryFn: () => fetchNoteById(id),
-    enabled: !!id,
-    refetchOnMount: false,
+    queryKey: ["note", noteId],
+    queryFn: () => clientFetchNoteById(noteId),
   });
 
-  return (
-    <Modal>
-      {isLoading && <Loader />}
-      {isError && <p>Could not fetch note details.</p>}
-      {note && <NoteDetails note={note} />}
-    </Modal>
-  );
+  const content = () => {
+    if (isLoading) return <Loader />;
+    if (isError) return <ErrorMessage message={error.message} />;
+    if (!note) return <ErrorMessage message="Note not found." />;
+    return (
+      <article className={css.note}>
+        <h2 className={css.title}>{note.title}</h2>
+        <p className={css.tag}>{note.tag}</p>
+        <p>{note.content}</p>
+      </article>
+    );
+  };
+
+  return <Modal>{content()}</Modal>;
 }

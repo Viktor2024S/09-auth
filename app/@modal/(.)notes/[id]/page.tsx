@@ -3,7 +3,7 @@ import {
   QueryClient,
   dehydrate,
 } from "@tanstack/react-query";
-import { fetchNoteById } from "@/lib/api/api";
+import { fetchNoteById } from "@/lib/api/serverApi";
 import NotePreviewClient from "./NotePreview.client";
 
 export default async function InterceptedNotePage({
@@ -15,14 +15,16 @@ export default async function InterceptedNotePage({
   const parsedId = Number(id);
   const queryClient = new QueryClient();
 
-  await queryClient.prefetchQuery({
-    queryKey: ["note", parsedId],
-    queryFn: () => fetchNoteById(parsedId),
-  });
+  try {
+    await queryClient.prefetchQuery({
+      queryKey: ["note", parsedId],
+      queryFn: () => fetchNoteById(parsedId),
+    });
+  } catch (error) {}
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotePreviewClient />
+      <NotePreviewClient noteId={parsedId} />
     </HydrationBoundary>
   );
 }

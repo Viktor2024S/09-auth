@@ -1,11 +1,10 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 import { Toaster } from "react-hot-toast";
 import Link from "next/link";
-import { fetchNotes } from "@/lib/api/api";
+import { clientFetchNotes } from "@/lib/api/clientApi";
 import { Note } from "@/types/note";
 import NoteList from "@/components/NoteList/NoteList";
 import SearchBox from "@/components/SearchBox/SearchBox";
@@ -14,10 +13,7 @@ import Loader from "@/components/Loader/Loader";
 import css from "./Notes.module.css";
 
 interface NotesClientProps {
-  initialData: {
-    notes: Note[];
-    totalPages: number;
-  };
+  initialData: { notes: Note[]; totalPages: number };
   currentTag: string;
 }
 
@@ -31,21 +27,19 @@ export default function NotesClient({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [currentTag]);
+  }, [currentTag, debouncedSearchQuery]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["notes", currentPage, debouncedSearchQuery, currentTag],
-    queryFn: () => fetchNotes(currentPage, debouncedSearchQuery, currentTag),
+    queryFn: () =>
+      clientFetchNotes(currentPage, debouncedSearchQuery, currentTag),
     placeholderData: keepPreviousData,
     initialData: initialData,
   });
 
   const handlePageChange = ({ selected }: { selected: number }) =>
     setCurrentPage(selected + 1);
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-  };
+  const handleSearchChange = (query: string) => setSearchQuery(query);
 
   const notes = data?.notes ?? [];
   const totalPages = data?.totalPages ?? 0;

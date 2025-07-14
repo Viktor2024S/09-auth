@@ -1,36 +1,13 @@
-// import Link from "next/link";
-// import TagsMenu from "../TagsMenu/TagsMenu";
-// import css from "./Header.module.css";
-
-// export default function Header() {
-//   return (
-//     <header className={css.header}>
-//       <div className={css.container}>
-//         <Link href="/" aria-label="Home" className={css.logo}>
-//           NoteHub
-//         </Link>
-//         <nav aria-label="Main Navigation">
-//           <ul className={css.navigation}>
-//             <li>
-//               <Link href="/" className={css.link}>
-//                 Home
-//               </Link>
-//             </li>
-//             <li>
-//               <TagsMenu />
-//             </li>
-//           </ul>
-//         </nav>
-//       </div>
-//     </header>
-//   );
-// }
-
+"use client";
 import Link from "next/link";
 import AuthNavigation from "../AuthNavigation/AuthNavigation";
+import TagsMenu from "../TagsMenu/TagsMenu";
+import { useAuthStore } from "@/lib/store/authStore";
 import css from "./Header.module.css";
 
 export default function Header() {
+  const { isAuthenticated } = useAuthStore();
+
   return (
     <header className={css.header}>
       <div className={css.container}>
@@ -44,6 +21,11 @@ export default function Header() {
                 Home
               </Link>
             </li>
+            {isAuthenticated && (
+              <li>
+                <TagsMenu />
+              </li>
+            )}
             <AuthNavigation />
           </ul>
         </nav>

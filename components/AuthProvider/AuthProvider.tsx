@@ -17,14 +17,9 @@ export default function AuthProvider({
     queryFn: async () => {
       try {
         const data = await getSession();
-        if (data.user) {
-          setUser(data.user);
-        } else {
-          setUser(null);
-        }
+        setUser(data.user || null);
         return data;
-      } catch (error) {
-        console.error("Failed to fetch session:", error);
+      } catch {
         setUser(null);
         return null;
       }

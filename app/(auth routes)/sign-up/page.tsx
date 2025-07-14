@@ -1,12 +1,10 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { AxiosError } from "axios";
-
 import { registerUser } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import css from "./SignUpPage.module.css";
@@ -31,8 +29,7 @@ export default function SignUpPage() {
     onError: (err: Error | AxiosError) => {
       let errorMessage = "Registration failed. Please try again.";
       if (err instanceof AxiosError && err.response) {
-        const errorData = err.response.data as ApiError;
-        errorMessage = errorData.message || errorMessage;
+        errorMessage = (err.response.data as ApiError)?.message || errorMessage;
       }
       setError(errorMessage);
       toast.error(errorMessage);
@@ -42,7 +39,6 @@ export default function SignUpPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
@@ -54,7 +50,6 @@ export default function SignUpPage() {
     <main className={css.mainContent}>
       <h1 className={css.formTitle}>Sign up</h1>
       <form className={css.form} onSubmit={handleSubmit}>
-        {/* ... rest of the form ... */}
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
           <input
