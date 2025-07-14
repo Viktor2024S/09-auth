@@ -1,12 +1,14 @@
-"use client";
 import { useQuery } from "@tanstack/react-query";
 import { clientFetchNoteById } from "@/lib/api/clientApi";
-import Modal from "@/components/Modal/Modal";
 import Loader from "@/components/Loader/Loader";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import css from "./NotePreview.module.css";
 
-export default function NotePreviewClient({ noteId }: { noteId: number }) {
+interface NotePreviewClientProps {
+  noteId: number;
+}
+
+export default function NotePreviewClient({ noteId }: NotePreviewClientProps) {
   const {
     data: note,
     isLoading,
@@ -15,20 +17,24 @@ export default function NotePreviewClient({ noteId }: { noteId: number }) {
   } = useQuery({
     queryKey: ["note", noteId],
     queryFn: () => clientFetchNoteById(noteId),
+    enabled: !!noteId,
   });
 
-  const content = () => {
-    if (isLoading) return <Loader />;
-    if (isError) return <ErrorMessage message={error.message} />;
-    if (!note) return <ErrorMessage message="Note not found." />;
-    return (
-      <article className={css.note}>
+  if (isLoading) return <Loader />;
+  if (isError) return <ErrorMessage message={error.message} />;
+  if (!note) return <ErrorMessage message="Note preview not available." />;
+
+  return (
+    <div className={css.modalOverlay}>
+      <div className={css.modalContent}>
         <h2 className={css.title}>{note.title}</h2>
         <p className={css.tag}>{note.tag}</p>
-        <p>{note.content}</p>
-      </article>
-    );
-  };
+        <div className={css.content}>
+          <p>{note.content.substring(0, 200)}...</p>{" "}
+        </div>
 
-  return <Modal>{content()}</Modal>;
+        {/* <button onClick={() => window.history.back()}>Close</button> */}
+      </div>
+    </div>
+  );
 }

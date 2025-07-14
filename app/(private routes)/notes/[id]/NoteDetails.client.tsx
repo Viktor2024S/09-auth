@@ -5,7 +5,11 @@ import Loader from "@/components/Loader/Loader";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import css from "./NoteDetails.module.css";
 
-export default function NoteDetailsClient({ noteId }: { noteId: number }) {
+interface NoteDetailsClientProps {
+  noteId: number;
+}
+
+export default function NoteDetailsClient({ noteId }: NoteDetailsClientProps) {
   const {
     data: note,
     isLoading,
@@ -14,19 +18,27 @@ export default function NoteDetailsClient({ noteId }: { noteId: number }) {
   } = useQuery({
     queryKey: ["note", noteId],
     queryFn: () => clientFetchNoteById(noteId),
+    enabled: !!noteId,
   });
 
   if (isLoading) return <Loader />;
-  if (isError) return <ErrorMessage message={error.message} />;
+  if (isError)
+    return <ErrorMessage message={error?.message || "Something went wrong."} />; //
   if (!note) return <ErrorMessage message="Note not found." />;
 
   return (
-    <article className={css.note}>
-      <h1 className={css.title}>{note.title}</h1>
-      <p className={css.tag}>{note.tag}</p>
-      <div className={css.content}>
-        <p>{note.content}</p>
+    <div className={css.container}>
+      <div className={css.item}>
+        <div className={css.header}>
+          <h2 className={css.title}>{note.title}</h2>
+          {/*  "Edit note" */}
+          {/* <button className={css.editBtn}>Edit note</button> */}
+        </div>
+        <p className={css.content}>{note.content}</p>
+        <p className={css.date}>
+          Created at: {new Date(note.createdAt).toLocaleDateString()}
+        </p>
       </div>
-    </article>
+    </div>
   );
 }

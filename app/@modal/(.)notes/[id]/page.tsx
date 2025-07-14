@@ -20,11 +20,16 @@ export default async function InterceptedNotePage({
       queryKey: ["note", parsedId],
       queryFn: () => fetchNoteById(parsedId),
     });
-  } catch (error) {}
+  } catch (_error) {
+    console.warn(
+      `Failed to prefetch note for modal with ID: ${parsedId}`,
+      _error
+    );
+  }
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotePreviewClient noteId={parsedId} />
+      <NotePreviewClient noteId={parsedId} />{" "}
     </HydrationBoundary>
   );
 }

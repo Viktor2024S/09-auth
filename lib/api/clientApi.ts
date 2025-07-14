@@ -2,7 +2,6 @@ import instance from "./api";
 import { Note, NoteData } from "@/types/note";
 import { User, AuthRequest, AuthResponse } from "@/types/user";
 
-// Note-related functions for client-side usage
 export const clientFetchNotes = async (
   page: number = 1,
   query: string = "",
@@ -30,41 +29,35 @@ export const deleteNote = async (noteId: number): Promise<Note> => {
   return data;
 };
 
-// Auth & User functions
 export const registerUser = async (
   credentials: AuthRequest
 ): Promise<AuthResponse> => {
   const { data } = await instance.post<AuthResponse>(
-    "/auth/register",
+    "/users/register",
     credentials
   );
   return data;
 };
-
 export const loginUser = async (
   credentials: AuthRequest
 ): Promise<AuthResponse> => {
   const { data } = await instance.post<AuthResponse>(
-    "/auth/login",
+    "/users/login",
     credentials
   );
   return data;
 };
-
 export const logoutUser = async (): Promise<void> => {
-  await instance.post("/auth/logout");
+  await instance.post("/users/logout");
 };
-
 export const getSession = async (): Promise<AuthResponse> => {
-  const { data } = await instance.get<AuthResponse>("/auth/session");
+  const { data } = await instance.get<AuthResponse>("/users/current");
   return data;
 };
-
 export const getMyProfile = async (): Promise<User> => {
   const { data } = await instance.get<User>("/users/me");
   return data;
 };
-
 export const updateUser = async (userData: Partial<User>): Promise<User> => {
   const { data } = await instance.patch<User>("/users/me", userData);
   return data;

@@ -10,6 +10,7 @@ import NoteList from "@/components/NoteList/NoteList";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
 import Loader from "@/components/Loader/Loader";
+import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import css from "./Notes.module.css";
 
 interface NotesClientProps {
@@ -29,7 +30,7 @@ export default function NotesClient({
     setCurrentPage(1);
   }, [currentTag, debouncedSearchQuery]);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["notes", currentPage, debouncedSearchQuery, currentTag],
     queryFn: () =>
       clientFetchNotes(currentPage, debouncedSearchQuery, currentTag),
@@ -44,17 +45,31 @@ export default function NotesClient({
   const notes = data?.notes ?? [];
   const totalPages = data?.totalPages ?? 0;
 
+  if (isLoading && !data) return <Loader />;
+  if (isError)
+    return (
+      <ErrorMessage message={error?.message || "Failed to fetch notes."} />
+    );
+
   return (
     <div className={css.container}>
       <Toaster position="top-right" reverseOrder={false} />
+
       <header className={css.toolbar}>
         <SearchBox value={searchQuery} onChange={handleSearchChange} />
         <Link href="/notes/action/create" className={css.button}>
           Create note +
         </Link>
       </header>
-      {isLoading && <Loader />}
-      {notes.length > 0 ? <NoteList notes={notes} /> : <p>No notes found.</p>}
+
+      {isLoading ? (
+        <Loader />
+      ) : notes.length > 0 ? (
+        <NoteList notes={notes} />
+      ) : (
+        <p>No notes found.</p>
+      )}
+
       {totalPages > 1 && !isLoading && (
         <div className={css.paginationContainer}>
           <Pagination

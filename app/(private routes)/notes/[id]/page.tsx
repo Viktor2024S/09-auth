@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { fetchNoteById } from "@/lib/api/serverApi";
 import NoteDetailsClient from "./NoteDetails.client";
+import { Note } from "@/types/note";
 
 export async function generateMetadata({
   params,
@@ -14,12 +15,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   try {
-    const note = await fetchNoteById(Number(id));
+    const note: Note = await fetchNoteById(Number(id));
     return {
       title: note.title,
       description: note.content.substring(0, 160),
     };
-  } catch (error) {
+  } catch (_error) {
+    void _error;
     return { title: "Note not found" };
   }
 }
