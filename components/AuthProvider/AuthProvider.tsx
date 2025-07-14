@@ -17,7 +17,7 @@ export default function AuthProvider({
     queryFn: async () => {
       try {
         const data = await getSession();
-        setUser(data.user || null);
+        setUser(data || null);
         return data;
       } catch {
         setUser(null);

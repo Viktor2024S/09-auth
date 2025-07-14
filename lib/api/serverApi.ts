@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import instance from "./api";
-import { Note } from "@/types/note";
+import { Note, NoteData } from "@/types/note";
 import { User } from "@/types/user";
 
 interface PaginatedNotesResponse {
@@ -35,6 +35,14 @@ export const fetchNoteById = async (id: number): Promise<Note> => {
   return data;
 };
 
+export const createNote = async (noteData: NoteData): Promise<Note> => {
+  const cookie = cookies().toString();
+  const { data } = await instance.post<Note>("/notes", noteData, {
+    headers: { Cookie: cookie },
+  });
+  return data;
+};
+
 export const getServerSideProfile = async (): Promise<User | null> => {
   try {
     const cookie = cookies().toString();
@@ -44,6 +52,20 @@ export const getServerSideProfile = async (): Promise<User | null> => {
     });
     return data;
   } catch {
+    return null;
+  }
+};
+
+export const getSession = async (): Promise<User | null> => {
+  try {
+    const cookie = cookies().toString();
+    if (!cookie) return null;
+    const { data } = await instance.get<User>("/users/me", {
+      headers: { Cookie: cookie },
+    });
+    return data;
+  } catch (error) {
+    console.error("Server-side getSession failed:", error);
     return null;
   }
 };

@@ -50,10 +50,12 @@ export const loginUser = async (
 export const logoutUser = async (): Promise<void> => {
   await instance.post("/users/logout");
 };
-export const getSession = async (): Promise<AuthResponse> => {
-  const { data } = await instance.get<AuthResponse>("/users/current");
+
+export const getSession = async (): Promise<User> => {
+  const { data } = await instance.get<User>("/users/me");
   return data;
 };
+
 export const getMyProfile = async (): Promise<User> => {
   const { data } = await instance.get<User>("/users/me");
   return data;

@@ -1,113 +1,103 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-
-import { useNoteStore } from "@/lib/store/noteStore";
+import { NoteData } from "@/types/note";
 import { createNoteAction } from "@/lib/actions";
-import { NoteData, Tag } from "@/types/note";
 import css from "./NoteForm.module.css";
 
-const noteTags: Tag[] = ["Todo", "Work", "Personal", "Meeting", "Shopping"];
+interface NoteFormProps {
+  initialData?: NoteData;
+  isEdit?: boolean;
+}
 
-export default function NoteForm() {
+export default function NoteForm({
+  initialData = { title: "", content: "", tag: "Todo" },
+  isEdit = false,
+}: NoteFormProps) {
+  const [formData, setFormData] = useState<NoteData>(initialData);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { draft, setDraft, clearDraft } = useNoteStore();
 
-  const createNoteMutation = useMutation({
+  const mutation = useMutation({
     mutationFn: createNoteAction,
+    onMutate: () => {
+      toast.loading("Creating note...");
+    },
     onSuccess: (result) => {
       toast.dismiss();
       if (result?.error) {
         toast.error(result.error);
       } else {
         toast.success("Note created successfully! Redirecting...");
-        clearDraft();
         queryClient.invalidateQueries({ queryKey: ["notes"] });
+        router.push("/notes");
       }
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast.dismiss();
-      if (error.message === "NEXT_REDIRECT") {
-        return;
-      }
-      toast.error(error.message || "Failed to create note.");
+      toast.error(`Failed to create note: ${error.message}`);
     },
   });
 
-  const handleFieldChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setDraft(e.target.name as keyof NoteData, e.target.value);
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    createNoteMutation.mutate(draft);
+    mutation.mutate(formData);
   };
-
-  const { isPending } = createNoteMutation;
 
   return (
     <form className={css.form} onSubmit={handleSubmit}>
-      <div className={css.formGroup}>
-        <label htmlFor="title">Title</label>
+      <label className={css.label}>
+        Title:
         <input
           type="text"
-          id="title"
           name="title"
-          value={draft.title}
-          onChange={handleFieldChange}
-          className={css.input}
+          value={formData.title}
+          onChange={handleChange}
           required
-          disabled={isPending}
+          className={css.input}
         />
-      </div>
-      <div className={css.formGroup}>
-        <label htmlFor="content">Content</label>
+      </label>
+      <label className={css.label}>
+        Content:
         <textarea
-          id="content"
           name="content"
-          value={draft.content}
-          onChange={handleFieldChange}
+          value={formData.content}
+          onChange={handleChange}
+          required
           className={css.textarea}
-          disabled={isPending}
         />
-      </div>
-      <div className={css.formGroup}>
-        <label htmlFor="tag">Tag</label>
-        <select
-          id="tag"
+      </label>
+      <label className={css.label}>
+        Tag:
+        <input
+          type="text"
           name="tag"
-          value={draft.tag}
-          onChange={handleFieldChange}
-          className={css.select}
-          disabled={isPending}
-        >
-          {noteTags.map((tag) => (
-            <option key={tag} value={tag}>
-              {tag}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className={css.actions}>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className={css.cancelButton}
-          disabled={isPending}
-        >
-          Cancel
-        </button>
-        <button type="submit" className={css.submitButton} disabled={isPending}>
-          {isPending ? "Creating..." : "Create Note"}
-        </button>
-      </div>
+          value={formData.tag}
+          onChange={handleChange}
+          className={css.input}
+        />
+      </label>
+      <button
+        type="submit"
+        disabled={mutation.isPending}
+        className={css.button}
+      >
+        {mutation.isPending
+          ? "Saving..."
+          : isEdit
+            ? "Update Note"
+            : "Create Note"}
+      </button>
     </form>
   );
 }
