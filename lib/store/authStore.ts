@@ -4,13 +4,24 @@ import { User } from "@/types/user";
 import { StoreApi, UseBoundStore } from "zustand";
 
 const noopStorage: Storage = {
-  getItem: (_name: string) => null,
-  setItem: (_name: string, _value: string) => {},
-  removeItem: (_name: string) => {},
+  getItem: (_: string) => {
+    void _;
+    return null;
+  },
+  setItem: (_: string, __: string) => {
+    void _;
+    void __;
+  },
+  removeItem: (_: string) => {
+    void _;
+  },
 
   length: 0,
   clear: () => {},
-  key: (_index: number) => null,
+  key: (_: number) => {
+    void _; // Явно "використовуємо" _
+    return null;
+  },
 };
 
 export interface AuthState {
