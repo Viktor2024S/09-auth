@@ -1,29 +1,31 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
 import { clientFetchNoteById } from "@/lib/api/clientApi";
 import Loader from "@/components/Loader/Loader";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import css from "./NoteDetails.module.css";
+import { Note } from "@/types/note";
 
-export default function NoteDetailsClient() {
-  const params = useParams();
-  const id = params.id as string;
+interface NoteDetailsClientProps {
+  noteId: string;
+}
 
+export default function NoteDetailsClient({ noteId }: NoteDetailsClientProps) {
   const {
     data: note,
     isLoading,
     isError,
     error,
-  } = useQuery({
-    queryKey: ["note", id],
-    queryFn: () => clientFetchNoteById(id),
-    enabled: !!id,
+  } = useQuery<Note, Error>({
+    queryKey: ["note", noteId],
+    queryFn: () => clientFetchNoteById(noteId),
+    enabled: !!noteId,
   });
 
   if (isLoading) return <Loader />;
-  if (isError) return <ErrorMessage message={error.message} />;
+  if (isError)
+    return <ErrorMessage message={error?.message || "An error occurred."} />; //
   if (!note) return <ErrorMessage message="Note details not available." />;
 
   return (

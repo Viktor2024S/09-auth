@@ -8,12 +8,21 @@ import { fetchNoteById } from "@/lib/api/serverApi";
 import NoteDetailsClient from "./NoteDetails.client";
 import { Note } from "@/types/note";
 
+interface NotePageProps {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
 export async function generateMetadata({
   params,
-}: {
-  params: { id: string };
-}): Promise<Metadata> {
-  const { id } = params;
+  searchParams,
+}: NotePageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
+
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  void resolvedSearchParams;
+
   try {
     const note: Note = await fetchNoteById(id);
     return {
@@ -28,11 +37,15 @@ export async function generateMetadata({
 
 export default async function NoteDetailsPage({
   params,
-}: {
-  params: { id: string };
-}) {
+  searchParams,
+}: NotePageProps) {
   const queryClient = new QueryClient();
-  const { id } = params;
+
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
+
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  void resolvedSearchParams;
 
   try {
     await queryClient.prefetchQuery({
@@ -45,7 +58,7 @@ export default async function NoteDetailsPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NoteDetailsClient noteId={id} />{" "}
+      <NoteDetailsClient noteId={id} />
     </HydrationBoundary>
   );
 }
