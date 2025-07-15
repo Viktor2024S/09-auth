@@ -1,21 +1,52 @@
-import { createStore } from "zustand";
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { User } from "@/types/user";
+import { StoreApi, UseBoundStore } from "zustand";
+
+const noopStorage: Storage = {
+  getItem: (_name: string) => null,
+  setItem: (_name: string, _value: string) => {},
+  removeItem: (_name: string) => {},
+
+  length: 0,
+  clear: () => {},
+  key: (_index: number) => null,
+};
 
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
-  setUser: (user: User) => void;
+  setUser: (user: User | null) => void;
+  setIsAuthenticated: (status: boolean) => void;
   clearIsAuthenticated: () => void;
-  setAuthenticated: (status: boolean) => void;
 }
 
-export const createAuthStore = () =>
-  createStore<AuthState>()((set) => ({
+export const dummyAuthStore: UseBoundStore<StoreApi<AuthState>> =
+  create<AuthState>()(() => ({
     isAuthenticated: false,
     user: null,
-    setUser: (user) => set({ user, isAuthenticated: true }),
-    clearIsAuthenticated: () => set({ user: null, isAuthenticated: false }),
-    setAuthenticated: (status) => set({ isAuthenticated: status }),
+    setUser: () => {},
+    setIsAuthenticated: () => {},
+    clearIsAuthenticated: () => {},
   }));
 
-export type AuthStore = ReturnType<typeof createAuthStore>;
+export type AuthStoreType = UseBoundStore<StoreApi<AuthState>>;
+
+export const createAuthStore = (): AuthStoreType =>
+  create<AuthState>()(
+    persist(
+      (set) => ({
+        isAuthenticated: false,
+        user: null,
+        setUser: (user) => set({ user, isAuthenticated: !!user }),
+        setIsAuthenticated: (status) => set({ isAuthenticated: status }),
+        clearIsAuthenticated: () => set({ isAuthenticated: false, user: null }),
+      }),
+      {
+        name: "auth-storage",
+        storage: createJSONStorage(() =>
+          typeof window !== "undefined" ? localStorage : noopStorage
+        ),
+      }
+    )
+  );

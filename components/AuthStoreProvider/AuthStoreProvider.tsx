@@ -2,9 +2,13 @@
 
 import { useRef, createContext, useContext } from "react";
 import { useStoreWithEqualityFn } from "zustand/traditional";
-import { createAuthStore, AuthStore, AuthState } from "@/lib/store/authStore"; //
+import {
+  createAuthStore,
+  AuthState,
+  AuthStoreType,
+} from "@/lib/store/authStore";
 
-export const AuthStoreContext = createContext<AuthStore | null>(null);
+export const AuthStoreContext = createContext<AuthStoreType | null>(null);
 
 export const useAuthStore = <T,>(
   selector: (store: AuthState) => T,
@@ -24,7 +28,7 @@ export default function AuthStoreProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const storeRef = useRef<AuthStore | null>(null);
+  const storeRef = useRef<AuthStoreType | null>(null);
 
   if (!storeRef.current) {
     storeRef.current = createAuthStore();
