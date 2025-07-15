@@ -2,7 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { checkSession } from "@/lib/api/clientApi";
-import { useAuthStore } from "@/lib/store/authStore";
+
+import { useAuthStore } from "@/components/AuthStoreProvider/AuthStoreProvider"; //
 import Loader from "../Loader/Loader";
 
 export default function AuthProvider({
@@ -10,7 +11,10 @@ export default function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { setUser, clearIsAuthenticated } = useAuthStore();
+  const { setUser, clearIsAuthenticated } = useAuthStore((state) => ({
+    setUser: state.setUser,
+    clearIsAuthenticated: state.clearIsAuthenticated,
+  }));
 
   const { isLoading } = useQuery({
     queryKey: ["session"],

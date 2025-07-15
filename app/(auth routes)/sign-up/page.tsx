@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { registerUser } from "@/lib/api/clientApi";
-import { useAuthStore } from "@/lib/store/authStore";
+import { useAuthStore } from "@/components/AuthStoreProvider/AuthStoreProvider";
 import { UserAuth } from "@/types/user";
 import toast from "react-hot-toast";
 import css from "./SignUpPage.module.css";

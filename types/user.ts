@@ -12,5 +12,6 @@ export interface UserAuth {
 
 export interface UserUpdate {
   username?: string;
+  email?: string;
   avatar?: string | null;
 }

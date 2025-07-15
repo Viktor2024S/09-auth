@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
-import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
-import AuthProvider from "@/components/AuthProvider/AuthProvider";
+import Providers from "@/app/providers";
 import "modern-normalize/modern-normalize.css";
 import "./globals.css";
 
@@ -48,14 +47,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${roboto.variable}`}>
       <body>
-        <TanStackProvider>
-          <AuthProvider>
-            <Header />
-            <main className="main-content">{children}</main>
-            <Footer />
-            <div className="modal-container">{modal}</div>
-          </AuthProvider>
-        </TanStackProvider>
+        <Providers>
+          {" "}
+          <Header />
+          <main className="main-content">{children}</main>
+          <Footer />
+          <div className="modal-container">{modal}</div>
+        </Providers>
       </body>
     </html>
   );

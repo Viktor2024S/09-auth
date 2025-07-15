@@ -2,11 +2,13 @@
 import Link from "next/link";
 import AuthNavigation from "../AuthNavigation/AuthNavigation";
 import TagsMenu from "../TagsMenu/TagsMenu";
-import { useAuthStore } from "@/lib/store/authStore";
+import { useAuthStore } from "@/components/AuthStoreProvider/AuthStoreProvider";
 import css from "./Header.module.css";
 
 export default function Header() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore((state) => ({
+    isAuthenticated: state.isAuthenticated,
+  }));
 
   return (
     <header className={css.header}>

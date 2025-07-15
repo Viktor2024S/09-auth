@@ -1,15 +1,8 @@
+"use client";
+
 import { Metadata } from "next";
 import Link from "next/link";
 import css from "./Home.module.css";
-
-// export const metadata: Metadata = {
-//   title: "Page Not Found",
-//   description: "Sorry, the page you are looking for does not exist.",
-//   openGraph: {
-//     title: "Page Not Found | NoteHub",
-//     description: "This link leads to a page that doesn't exist on NoteHub.",
-//   },
-// };
 
 export const metadata: Metadata = {
   title: "Page Not Found",
