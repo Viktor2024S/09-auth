@@ -19,7 +19,7 @@ const noopStorage: Storage = {
   length: 0,
   clear: () => {},
   key: (_: number) => {
-    void _; // Явно "використовуємо" _
+    void _;
     return null;
   },
 };

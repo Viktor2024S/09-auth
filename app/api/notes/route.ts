@@ -1,10 +1,8 @@
-// app\api\notes\route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { api } from "../api"; // Переконайтеся, що це правильний шлях до вашого інстансу Axios
+import { api } from "../api";
 import { cookies } from "next/headers";
-import { AxiosError } from "axios"; // ✅ Додаємо імпорт AxiosError
+import { AxiosError } from "axios";
 
-// Допоміжна функція для формування заголовка Cookie
 const getAuthCookieHeader = async () => {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
@@ -22,16 +20,14 @@ const getAuthCookieHeader = async () => {
 };
 
 export async function GET(request: NextRequest) {
-  const authCookieHeader = await getAuthCookieHeader(); // ✅ Використовуємо нову функцію
+  const authCookieHeader = await getAuthCookieHeader();
   const search = request.nextUrl.searchParams.get("search") ?? "";
   const page = Number(request.nextUrl.searchParams.get("page") ?? 1);
   const rawTag = request.nextUrl.searchParams.get("tag") ?? "";
   const tag = rawTag === "All" ? "" : rawTag;
 
   try {
-    // ✅ Додаємо try-catch блок
     const { data } = await api.get("/notes", {
-      // ✅ Змінено 'api' на 'api.get'
       params: {
         ...(search !== "" && { search }),
         page,
@@ -39,7 +35,7 @@ export async function GET(request: NextRequest) {
         ...(tag && { tag }),
       },
       headers: {
-        ...(authCookieHeader && { Cookie: authCookieHeader }), // ✅ Передаємо сформований заголовок
+        ...(authCookieHeader && { Cookie: authCookieHeader }),
       },
     });
     if (data) {
@@ -50,7 +46,6 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   } catch (error: unknown) {
-    // ✅ Обробка помилок
     if (error instanceof AxiosError) {
       console.error(
         "Error fetching notes list:",
@@ -75,14 +70,14 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const authCookieHeader = await getAuthCookieHeader(); // ✅ Використовуємо нову функцію
+  const authCookieHeader = await getAuthCookieHeader();
 
   try {
     const body = await request.json();
 
     const { data } = await api.post("/notes", body, {
       headers: {
-        ...(authCookieHeader && { Cookie: authCookieHeader }), // ✅ Передаємо сформований заголовок
+        ...(authCookieHeader && { Cookie: authCookieHeader }),
         "Content-Type": "application/json",
       },
     });
@@ -91,7 +86,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(data, { status: 201 });
     }
   } catch (error: unknown) {
-    // ✅ Обробка помилок
     if (error instanceof AxiosError) {
       console.error(
         "Error creating note:",
@@ -110,9 +104,4 @@ export async function POST(request: NextRequest) {
       );
     }
   }
-  // Цей return NextResponse.json(...) { status: 500 } стане недосяжним,
-  // оскільки всі шляхи мають повертати щось у catch.
-  // Можна його видалити, або залишити як запасний варіант, якщо у catch не повертається значення.
-  // Але з поточною логікою він вже не потрібен.
-  // return NextResponse.json({ error: "Failed to create note" }, { status: 500 });
 }
