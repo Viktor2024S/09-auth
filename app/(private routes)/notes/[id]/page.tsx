@@ -11,11 +11,11 @@ import { Note } from "@/types/note";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }): Promise<Metadata> {
-  const { id } = await params;
+  const { id } = params;
   try {
-    const note: Note = await fetchNoteById(Number(id));
+    const note: Note = await fetchNoteById(id);
     return {
       title: note.title,
       description: note.content.substring(0, 160),
@@ -29,16 +29,15 @@ export async function generateMetadata({
 export default async function NoteDetailsPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
   const queryClient = new QueryClient();
-  const { id } = await params;
-  const parsedId = Number(id);
+  const { id } = params;
 
   try {
     await queryClient.prefetchQuery({
-      queryKey: ["note", parsedId],
-      queryFn: () => fetchNoteById(parsedId),
+      queryKey: ["note", id],
+      queryFn: () => fetchNoteById(id),
     });
   } catch (error) {
     console.error("Failed to prefetch note:", error);
@@ -46,7 +45,7 @@ export default async function NoteDetailsPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NoteDetailsClient noteId={parsedId} />
+      <NoteDetailsClient noteId={id} />{" "}
     </HydrationBoundary>
   );
 }

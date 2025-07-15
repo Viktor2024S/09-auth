@@ -2,15 +2,17 @@ import { create } from "zustand";
 import { User } from "@/types/user";
 
 interface AuthState {
-  user: User | null;
   isAuthenticated: boolean;
-  setUser: (user: User | null) => void;
-  clearAuth: () => void;
+  user: User | null;
+  setUser: (user: User) => void;
+  clearIsAuthenticated: () => void;
+  setAuthenticated: (status: boolean) => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
+export const useAuthStore = create<AuthState>()((set) => ({
   isAuthenticated: false,
-  setUser: (user) => set({ user, isAuthenticated: !!user }),
-  clearAuth: () => set({ user: null, isAuthenticated: false }),
+  user: null,
+  setUser: (user) => set({ user, isAuthenticated: true }),
+  clearIsAuthenticated: () => set({ user: null, isAuthenticated: false }),
+  setAuthenticated: (status) => set({ isAuthenticated: status }),
 }));

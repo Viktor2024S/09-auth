@@ -4,11 +4,14 @@ import { useEffect, useState, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import css from "./Modal.module.css";
+import { HydrationBoundary, DehydratedState } from "@tanstack/react-query";
+
 interface ModalProps {
   children: ReactNode;
+  dehydratedState?: DehydratedState;
 }
 
-export default function Modal({ children }: ModalProps) {
+export default function Modal({ children, dehydratedState }: ModalProps) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
@@ -45,7 +48,13 @@ export default function Modal({ children }: ModalProps) {
             <button className={css.closeButton} onClick={() => router.back()}>
               &times;
             </button>
-            {children}
+            {dehydratedState ? (
+              <HydrationBoundary state={dehydratedState}>
+                {children}
+              </HydrationBoundary>
+            ) : (
+              children
+            )}
           </div>
         </div>,
         document.body

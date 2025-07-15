@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getSession } from "@/lib/api/clientApi";
+import { checkSession } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import Loader from "../Loader/Loader";
 
@@ -10,17 +10,22 @@ export default function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { setUser } = useAuthStore();
+  const { setUser, clearIsAuthenticated } = useAuthStore();
 
   const { isLoading } = useQuery({
     queryKey: ["session"],
     queryFn: async () => {
       try {
-        const data = await getSession();
-        setUser(data || null);
-        return data;
-      } catch {
-        setUser(null);
+        const response = await checkSession();
+        if (response.data) {
+          setUser(response.data);
+        } else {
+          clearIsAuthenticated();
+        }
+        return response.data;
+      } catch (error) {
+        console.error("Authentication check failed:", error);
+        clearIsAuthenticated();
         return null;
       }
     },

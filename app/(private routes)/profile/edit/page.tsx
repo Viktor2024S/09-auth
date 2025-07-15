@@ -1,95 +1,155 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
 import Image from "next/image";
-import { getMyProfile, updateUser } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
-import Loader from "@/components/Loader/Loader";
+import { updateUser, uploadImage } from "@/lib/api/clientApi";
+import { UserUpdate } from "@/types/user";
+import toast from "react-hot-toast";
 import css from "./EditProfilePage.module.css";
+import { AxiosError } from "axios";
 
-export default function EditProfilePage() {
+export default function ProfileEditPage() {
   const router = useRouter();
-  const queryClient = useQueryClient();
-  const { setUser } = useAuthStore();
-  const [username, setUsername] = useState("");
-
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["profile"],
-    queryFn: getMyProfile,
-  });
+  const { user, setUser } = useAuthStore();
+  const [username, setUsername] = useState(user?.username || "");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [previewAvatarUrl, setPreviewAvatarUrl] = useState<string | null>(
+    user?.avatar || null
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (user) setUsername(user.username);
+    if (user) {
+      setUsername(user.username || "");
+      setPreviewAvatarUrl(user.avatar || null);
+    }
   }, [user]);
 
-  const mutation = useMutation({
-    mutationFn: (newUsername: string) => updateUser({ username: newUsername }),
-    onSuccess: (updatedUser) => {
-      toast.success("Profile updated successfully!");
-      setUser(updatedUser);
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      router.push("/profile");
-    },
-    onError: (error) => {
-      toast.error("Failed to update profile.");
-      console.error(error);
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (user?.username === username) {
-      toast("No changes made.");
-      return;
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      setAvatarFile(file);
+      setPreviewAvatarUrl(URL.createObjectURL(file));
     }
-    mutation.mutate(username);
   };
 
-  if (isLoading) return <Loader />;
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      let finalAvatarUrl: string | null | undefined = user?.avatar || null;
+
+      if (avatarFile) {
+        const uploadResponse = await uploadImage(avatarFile);
+        finalAvatarUrl = uploadResponse.photoUrl;
+        if (!finalAvatarUrl) {
+          throw new Error("Failed to upload image or retrieve URL.");
+        }
+      } else if (previewAvatarUrl === null && user?.avatar) {
+        finalAvatarUrl = null;
+      }
+
+      const updatedUserData: UserUpdate = { username: username.trim() };
+
+      if (finalAvatarUrl !== undefined) {
+        updatedUserData.avatar = finalAvatarUrl;
+      }
+
+      const updatedUser = await updateUser(updatedUserData);
+      setUser(updatedUser);
+      toast.success("Profile updated successfully!");
+      router.push("/profile");
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      console.error("Failed to update profile:", axiosError);
+      setError(
+        axiosError.response?.data?.message || "Failed to update profile."
+      );
+      toast.error(
+        axiosError.response?.data?.message || "Failed to update profile."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
         <h1 className={css.formTitle}>Edit Profile</h1>
-        <Image
-          src={user?.avatar || "/default-avatar.png"}
-          alt="User Avatar"
-          width={120}
-          height={120}
-          className={css.avatar}
-        />
-        <form className={css.profileInfo} onSubmit={handleSubmit}>
-          <div className={css.usernameWrapper}>
-            <label htmlFor="username">Username:</label>
+        <form className={css.form} onSubmit={handleSubmit}>
+          <div className={css.formGroup}>
+            <label htmlFor="username">Username</label>
             <input
               id="username"
               type="text"
+              name="username"
               className={css.input}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              disabled={mutation.isPending}
+              required
             />
           </div>
-          <p>
-            <strong>Email:</strong> {user?.email}
-          </p>
+
+          <div className={css.formGroup}>
+            <label htmlFor="avatar">Avatar</label>
+            <input
+              id="avatar"
+              type="file"
+              name="avatar"
+              accept="image/*"
+              className={css.fileInput}
+              onChange={handleFileChange}
+            />
+            {previewAvatarUrl && (
+              <div className={css.avatarPreviewWrapper}>
+                <Image
+                  src={previewAvatarUrl}
+                  alt="Avatar Preview"
+                  width={100}
+                  height={100}
+                  className={css.avatarPreview}
+                  priority={true}
+                />
+              </div>
+            )}
+            {/* Кнопка для видалення аватара, якщо потрібно, додається тут */}
+            {previewAvatarUrl && user?.avatar && !avatarFile && (
+              <button
+                type="button"
+                className={css.clearAvatarButton}
+                onClick={() => {
+                  setAvatarFile(null);
+                  setPreviewAvatarUrl(null);
+                }}
+              >
+                Clear Avatar
+              </button>
+            )}
+          </div>
+
+          {error && <p className={css.error}>{error}</p>}
+
           <div className={css.actions}>
+            <button
+              type="submit"
+              className={css.submitButton}
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "Save Changes"}
+            </button>
             <button
               type="button"
               className={css.cancelButton}
-              onClick={() => router.back()}
-              disabled={mutation.isPending}
+              onClick={() => router.push("/profile")}
+              disabled={loading}
             >
               Cancel
-            </button>
-            <button
-              type="submit"
-              className={css.saveButton}
-              disabled={mutation.isPending}
-            >
-              {mutation.isPending ? "Saving..." : "Save"}
             </button>
           </div>
         </form>

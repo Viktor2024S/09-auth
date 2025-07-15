@@ -1,17 +1,16 @@
 export interface User {
-  id: string;
+  _id: string;
   email: string;
-  username: string;
+  username?: string;
   avatar?: string;
 }
 
-export interface AuthRequest {
-  email?: string;
-  password?: string;
-  username?: string;
+export interface UserAuth {
+  email: string;
+  password: string;
 }
 
-export interface AuthResponse {
-  user: User;
-  token?: string;
+export interface UserUpdate {
+  username?: string;
+  avatar?: string | null;
 }

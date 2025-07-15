@@ -1,49 +1,49 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import Link from "next/link";
-import { AxiosError } from "axios";
 import { registerUser } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
+import { UserAuth } from "@/types/user";
+import toast from "react-hot-toast";
 import css from "./SignUpPage.module.css";
-
-interface ApiError {
-  message: string;
-}
+import { AxiosError } from "axios";
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { setUser } = useAuthStore();
-  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const setUser = useAuthStore((state) => state.setUser);
 
-  const mutation = useMutation({
-    mutationFn: registerUser,
-    onSuccess: (data) => {
-      setUser(data.user);
-      toast.success("Registration successful!");
-      router.push("/profile");
-    },
-    onError: (err: Error | AxiosError) => {
-      let errorMessage = "Registration failed. Please try again.";
-      if (err instanceof AxiosError && err.response) {
-        errorMessage = (err.response.data as ApiError)?.message || errorMessage;
-      }
-      setError(errorMessage);
-      toast.error(errorMessage);
-    },
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError("");
-    const username = formData.email.split("@")[0];
-    mutation.mutate({ ...formData, username });
+
+    const formData = new FormData(event.currentTarget);
+
+    const formValues: UserAuth = {
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    };
+
+    try {
+      const user = await registerUser(formValues);
+      if (user) {
+        setUser(user);
+        toast.success("Registration successful! Redirecting...");
+        router.push("/profile");
+      } else {
+        setError("Registration failed. Please try again.");
+        toast.error("Registration failed.");
+      }
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      console.error("Registration error:", axiosError);
+      setError(
+        axiosError.response?.data?.message ||
+          "Registration failed. Invalid credentials."
+      );
+      toast.error(axiosError.response?.data?.message || "Registration failed.");
+    }
   };
 
   return (
@@ -58,8 +58,6 @@ export default function SignUpPage() {
             name="email"
             className={css.input}
             required
-            value={formData.email}
-            onChange={handleChange}
           />
         </div>
         <div className={css.formGroup}>
@@ -70,26 +68,14 @@ export default function SignUpPage() {
             name="password"
             className={css.input}
             required
-            value={formData.password}
-            onChange={handleChange}
           />
         </div>
         <div className={css.actions}>
-          <button
-            type="submit"
-            className={css.submitButton}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending ? "Registering..." : "Register"}
+          <button type="submit" className={css.submitButton}>
+            Register
           </button>
         </div>
         {error && <p className={css.error}>{error}</p>}
-        <p className={css.note}>
-          Already have an account?{" "}
-          <Link href="/sign-in" className={css.link}>
-            Sign in
-          </Link>
-        </p>
       </form>
     </main>
   );

@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
 import { clientFetchNoteById } from "@/lib/api/clientApi";
 import Loader from "@/components/Loader/Loader";
@@ -5,7 +7,7 @@ import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import css from "./NotePreview.module.css";
 
 interface NotePreviewClientProps {
-  noteId: number;
+  noteId: string;
 }
 
 export default function NotePreviewClient({ noteId }: NotePreviewClientProps) {

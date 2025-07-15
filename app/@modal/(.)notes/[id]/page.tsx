@@ -1,35 +1,35 @@
-import {
-  HydrationBoundary,
-  QueryClient,
-  dehydrate,
-} from "@tanstack/react-query";
+import InterceptedModal from "@/components/Modal/Modal";
+import NoteDetails from "@/components/NotePreview/NotePreview";
 import { fetchNoteById } from "@/lib/api/serverApi";
-import NotePreviewClient from "./NotePreview.client";
+import { QueryClient, dehydrate } from "@tanstack/react-query";
+
+interface InterceptedNotePageProps {
+  params: { id: string };
+}
 
 export default async function InterceptedNotePage({
   params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+}: InterceptedNotePageProps) {
   const { id } = await params;
-  const parsedId = Number(id);
+
   const queryClient = new QueryClient();
 
   try {
     await queryClient.prefetchQuery({
-      queryKey: ["note", parsedId],
-      queryFn: () => fetchNoteById(parsedId),
+      queryKey: ["note", id],
+      queryFn: () => fetchNoteById(id),
     });
-  } catch (_error) {
-    console.warn(
-      `Failed to prefetch note for modal with ID: ${parsedId}`,
-      _error
-    );
+  } catch (error) {
+    console.error("Failed to prefetch note details:", error);
+
+    return null;
   }
 
+  const dehydratedState = dehydrate(queryClient);
+
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotePreviewClient noteId={parsedId} />{" "}
-    </HydrationBoundary>
+    <InterceptedModal dehydratedState={dehydratedState}>
+      <NoteDetails noteId={id} />
+    </InterceptedModal>
   );
 }

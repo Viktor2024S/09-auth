@@ -1,54 +1,55 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import Link from "next/link";
-import { AxiosError } from "axios";
 import { loginUser } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
+import { UserAuth } from "@/types/user";
+import toast from "react-hot-toast";
 import css from "./SignInPage.module.css";
-
-interface ApiError {
-  message: string;
-}
+import { AxiosError } from "axios";
 
 export default function SignInPage() {
   const router = useRouter();
-  const { setUser } = useAuthStore();
-  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const setUser = useAuthStore((state) => state.setUser);
 
-  const mutation = useMutation({
-    mutationFn: loginUser,
-    onSuccess: (data) => {
-      setUser(data.user);
-      toast.success("Login successful!");
-      router.push("/profile");
-    },
-    onError: (err: Error | AxiosError) => {
-      let errorMessage = "Login failed. Please check your credentials.";
-      if (err instanceof AxiosError && err.response) {
-        errorMessage = (err.response.data as ApiError)?.message || errorMessage;
-      }
-      setError(errorMessage);
-      toast.error(errorMessage);
-    },
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError("");
-    mutation.mutate(formData);
+
+    const formData = new FormData(event.currentTarget);
+
+    const formValues: UserAuth = {
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    };
+
+    try {
+      const user = await loginUser(formValues);
+      if (user) {
+        setUser(user);
+        toast.success("Login successful! Redirecting...");
+        router.push("/profile");
+      } else {
+        setError("Login failed. Please try again.");
+        toast.error("Login failed.");
+      }
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      console.error("Login error:", axiosError);
+      setError(
+        axiosError.response?.data?.message ||
+          "Login failed. Invalid credentials."
+      );
+      toast.error(axiosError.response?.data?.message || "Login failed.");
+    }
   };
 
   return (
     <main className={css.mainContent}>
+      <h1 className={css.formTitle}>Sign in</h1>
       <form className={css.form} onSubmit={handleSubmit}>
-        <h1 className={css.formTitle}>Sign in</h1>
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
           <input
@@ -57,8 +58,6 @@ export default function SignInPage() {
             name="email"
             className={css.input}
             required
-            value={formData.email}
-            onChange={handleChange}
           />
         </div>
         <div className={css.formGroup}>
@@ -69,26 +68,14 @@ export default function SignInPage() {
             name="password"
             className={css.input}
             required
-            value={formData.password}
-            onChange={handleChange}
           />
         </div>
         <div className={css.actions}>
-          <button
-            type="submit"
-            className={css.submitButton}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending ? "Logging in..." : "Log in"}
+          <button type="submit" className={css.submitButton}>
+            Log in
           </button>
         </div>
         {error && <p className={css.error}>{error}</p>}
-        <p className={css.note}>
-          Don&apos;t have an account?{" "}
-          <Link href="/sign-up" className={css.link}>
-            Sign up
-          </Link>
-        </p>
       </form>
     </main>
   );

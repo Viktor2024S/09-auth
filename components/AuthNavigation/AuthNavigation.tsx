@@ -1,61 +1,66 @@
 "use client";
-import { useAuthStore } from "@/lib/store/authStore";
-import { useMutation } from "@tanstack/react-query";
-import { logoutUser } from "@/lib/api/clientApi";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { useAuthStore } from "@/lib/store/authStore";
+import { logoutUser } from "@/lib/api/clientApi";
+
 import css from "./AuthNavigation.module.css";
 
 export default function AuthNavigation() {
-  const { isAuthenticated, user, clearAuth } = useAuthStore();
+  const { isAuthenticated, user, clearIsAuthenticated } = useAuthStore();
   const router = useRouter();
 
-  const mutation = useMutation({
-    mutationFn: logoutUser,
-    onSuccess: () => {
-      clearAuth();
-      toast.success("You have been logged out.");
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      clearIsAuthenticated();
       router.push("/sign-in");
-    },
-    onError: () => {
-      toast.error("Logout failed. Please try again.");
-    },
-  });
-
-  const handleLogout = () => {
-    mutation.mutate();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (
     <>
       {isAuthenticated ? (
         <>
-          <li>
-            <Link href="/profile" className={css.navigationLink}>
+          <li className={css.navigationItem}>
+            <Link
+              href="/profile"
+              prefetch={false}
+              className={css.navigationLink}
+            >
               Profile
             </Link>
           </li>
-          <li className={css.navigationItem}>
-            <p className={css.userEmail}>{user?.email}</p>
-            <button
-              onClick={handleLogout}
-              className={css.logoutButton}
-              disabled={mutation.isPending}
-            >
-              Logout
-            </button>
-          </li>
+          {user && (
+            <li className={css.navigationItem}>
+              <p className={css.userEmail}>{user.email}</p>{" "}
+              {/* Відображаємо email */}
+              <button onClick={handleLogout} className={css.logoutButton}>
+                Logout
+              </button>
+            </li>
+          )}
         </>
       ) : (
         <>
-          <li>
-            <Link href="/sign-in" className={css.navigationLink}>
+          <li className={css.navigationItem}>
+            <Link
+              href="/sign-in"
+              prefetch={false}
+              className={css.navigationLink}
+            >
               Login
             </Link>
           </li>
-          <li>
-            <Link href="/sign-up" className={css.navigationLink}>
+          <li className={css.navigationItem}>
+            <Link
+              href="/sign-up"
+              prefetch={false}
+              className={css.navigationLink}
+            >
               Sign up
             </Link>
           </li>

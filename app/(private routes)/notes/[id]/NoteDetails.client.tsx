@@ -1,44 +1,36 @@
 "use client";
+
 import { useQuery } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
 import { clientFetchNoteById } from "@/lib/api/clientApi";
 import Loader from "@/components/Loader/Loader";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import css from "./NoteDetails.module.css";
 
-interface NoteDetailsClientProps {
-  noteId: number;
-}
+export default function NoteDetailsClient() {
+  const params = useParams();
+  const id = params.id as string;
 
-export default function NoteDetailsClient({ noteId }: NoteDetailsClientProps) {
   const {
     data: note,
     isLoading,
     isError,
     error,
   } = useQuery({
-    queryKey: ["note", noteId],
-    queryFn: () => clientFetchNoteById(noteId),
-    enabled: !!noteId,
+    queryKey: ["note", id],
+    queryFn: () => clientFetchNoteById(id),
+    enabled: !!id,
   });
 
   if (isLoading) return <Loader />;
-  if (isError)
-    return <ErrorMessage message={error?.message || "Something went wrong."} />; //
-  if (!note) return <ErrorMessage message="Note not found." />;
+  if (isError) return <ErrorMessage message={error.message} />;
+  if (!note) return <ErrorMessage message="Note details not available." />;
 
   return (
     <div className={css.container}>
-      <div className={css.item}>
-        <div className={css.header}>
-          <h2 className={css.title}>{note.title}</h2>
-          {/*  "Edit note" */}
-          {/* <button className={css.editBtn}>Edit note</button> */}
-        </div>
-        <p className={css.content}>{note.content}</p>
-        <p className={css.date}>
-          Created at: {new Date(note.createdAt).toLocaleDateString()}
-        </p>
-      </div>
+      <h1 className={css.title}>{note.title}</h1>
+      <p className={css.tag}>{note.tag}</p>
+      <p className={css.content}>{note.content}</p>
     </div>
   );
 }
