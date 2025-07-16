@@ -1,8 +1,10 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
-import Providers from "@/app/providers";
+import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
+import AuthProvider from "@/components/AuthProvider/AuthProvider";
 import "modern-normalize/modern-normalize.css";
 import "./globals.css";
 
@@ -23,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "NoteHub - Your Personal Notes Manager",
     description: "Organize your thoughts, tasks, and ideas with NoteHub.",
-    url: "https://09-auth-pi.vercel.app/",
+    url: "https://09-auth-pi.vercel.app/", // Your correct Vercel URL
     siteName: "NoteHub",
     images: [
       {
@@ -47,13 +49,15 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${roboto.variable}`}>
       <body>
-        <Providers>
-          {" "}
-          <Header />
-          <main className="main-content">{children}</main>
-          <Footer />
-          <div className="modal-container">{modal}</div>
-        </Providers>
+        <TanStackProvider>
+          {/* Correct explicit provider nesting */}
+          <AuthProvider>
+            <Header />
+            <main className="main-content">{children}</main>
+            <Footer />
+            <div className="modal-container">{modal}</div>
+          </AuthProvider>
+        </TanStackProvider>
       </body>
     </html>
   );

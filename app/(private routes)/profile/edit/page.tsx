@@ -1,121 +1,116 @@
+// app/(private-routes)/profile/edit/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { useAuthStore } from "@/components/AuthStoreProvider/AuthStoreProvider";
-import { updateUser, uploadImage } from "@/lib/api/clientApi";
-import { UserUpdate } from "@/types/user";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { AxiosError } from "axios";
+import Image from "next/image";
+
+import { getMyProfile, updateUser } from "@/lib/api/clientApi";
+import { useAuthStore } from "@/lib/store/authStore";
+import Loader from "@/components/Loader/Loader";
+import css from "./EditProfilePage.module.css";
+import { User, UserUpdate } from "@/types/user";
 
 export default function EditProfilePage() {
   const router = useRouter();
-  const [error, setError] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const queryClient = useQueryClient();
+  const { setUser: setAuthUser } = useAuthStore();
 
-  const { user, setUser } = useAuthStore((state) => ({
-    user: state.user,
-    setUser: state.setUser,
-  }));
+  const [username, setUsername] = useState("");
 
-  if (!user) {
-    return <div>Loading user data...</div>;
-  }
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: getMyProfile,
+  });
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setImageFile(event.target.files[0]);
+  useEffect(() => {
+    // Safely set the username only when user data is available
+    if (user) {
+      setUsername(user.username);
     }
+  }, [user]);
+
+  const mutation = useMutation({
+    mutationFn: (updatedData: UserUpdate) => updateUser(updatedData),
+    onSuccess: (updatedUser: User) => {
+      // Explicitly type the success data
+      toast.success("Profile updated successfully!");
+      setAuthUser(updatedUser);
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      router.push("/profile");
+    },
+    onError: (error) => {
+      toast.error("Failed to update profile.");
+      console.error(error);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!user || user.username === username.trim()) {
+      toast("No changes made.");
+      return;
+    }
+    mutation.mutate({ username: username.trim() });
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
-
-    const formData = new FormData(event.currentTarget);
-
-    const formValues: UserUpdate = {
-      username: formData.get("username") as string,
-      email: formData.get("email") as string,
-    };
-
-    try {
-      let currentAvatarUrl = user.avatar;
-
-      if (imageFile) {
-        const uploadResponse = await uploadImage(imageFile);
-        currentAvatarUrl = uploadResponse.photoUrl;
-      }
-
-      const updatedUser = await updateUser({
-        ...formValues,
-        avatar: currentAvatarUrl,
-      });
-
-      if (updatedUser) {
-        setUser(updatedUser);
-        toast.success("Profile updated successfully!");
-        router.push("/profile");
-      } else {
-        setError("Failed to update profile.");
-        toast.error("Profile update failed.");
-      }
-    } catch (err) {
-      const axiosError = err as AxiosError<{ message: string }>;
-      console.error("Profile update error:", axiosError);
-      setError(
-        axiosError.response?.data?.message || "Failed to update profile."
-      );
-      toast.error(
-        axiosError.response?.data?.message || "Profile update failed."
-      );
-    }
-  };
+  if (isLoading) return <Loader />;
+  // Add a guard clause for the case where the user is not found
+  if (!user) return <p>User not found. Please log in again.</p>;
 
   return (
-    <main>
-      <h1>Edit Profile</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="username">Username</label>
-          <input
-            id="username"
-            type="text"
-            name="username"
-            defaultValue={user.username || ""}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            defaultValue={user.email || ""}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="image">Profile Image</label>
-          <input
-            id="image"
-            type="file"
-            name="image"
-            accept="image/*"
-            onChange={handleImageChange}
-          />
+    <main className={css.mainContent}>
+      <div className={css.profileCard}>
+        <h1 className={css.formTitle}>Edit Profile</h1>
 
-          {user.avatar && (
-            <Image src={user.avatar} alt="Profile" width={100} height={100} />
-          )}
-        </div>
-        <div>
-          <button type="submit">Save Changes</button>
-        </div>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </form>
+        <Image
+          src={user.avatar || "/default-avatar.png"}
+          alt="User Avatar"
+          width={120}
+          height={120}
+          className={css.avatar}
+        />
+
+        <form className={css.profileInfo} onSubmit={handleSubmit}>
+          <div className={css.usernameWrapper}>
+            <label htmlFor="username">Username:</label>
+            <input
+              id="username"
+              type="text"
+              className={css.input}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={mutation.isPending}
+            />
+          </div>
+
+          {/* Email is now displayed as non-editable text */}
+          <p className={css.emailText}>
+            <strong>Email:</strong> {user.email}
+          </p>
+
+          <div className={css.actions}>
+            {/* Cancel button that navigates back */}
+            <button
+              type="button"
+              className={css.cancelButton}
+              onClick={() => router.back()}
+              disabled={mutation.isPending}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={css.saveButton}
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? "Saving..." : "Save"}
+            </button>
+          </div>
+        </form>
+      </div>
     </main>
   );
 }

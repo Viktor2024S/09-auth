@@ -1,5 +1,6 @@
+// lib/api/clientApi.ts
 import instance from "./api";
-import { User, UserAuth, UserUpdate } from "@/types/user";
+import { User, UserAuth, UserUpdate, AuthResponse } from "@/types/user";
 import { Note, NoteData } from "@/types/note";
 
 interface PaginatedNotesResponse {
@@ -7,15 +8,24 @@ interface PaginatedNotesResponse {
   totalPages: number;
 }
 
-// -------------------- AUTHENTICATION --------------------
-
-export const registerUser = async (credentials: UserAuth): Promise<User> => {
-  const { data } = await instance.post<User>("/auth/register", credentials);
+// --- AUTHENTICATION ---
+export const registerUser = async (
+  credentials: UserAuth
+): Promise<AuthResponse> => {
+  const { data } = await instance.post<AuthResponse>(
+    "/auth/register",
+    credentials
+  );
   return data;
 };
 
-export const loginUser = async (credentials: UserAuth): Promise<User> => {
-  const { data } = await instance.post<User>("/auth/login", credentials);
+export const loginUser = async (
+  credentials: UserAuth
+): Promise<AuthResponse> => {
+  const { data } = await instance.post<AuthResponse>(
+    "/auth/login",
+    credentials
+  );
   return data;
 };
 
@@ -23,19 +33,23 @@ export const logoutUser = async (): Promise<void> => {
   await instance.post("/auth/logout");
 };
 
-export const checkSession = async (): Promise<{ data: User | null }> => {
+export const checkSession = async (): Promise<AuthResponse | null> => {
   try {
-    const { data } = await instance.get<User | null>("/auth/session");
-    return { data };
-  } catch (error) {
-    console.error("Session check failed:", error);
-    return { data: null };
+    const { data } = await instance.get<AuthResponse>("/auth/session");
+    // The backend returns a user object on success or an empty object/error on failure
+    if (data && data.user) {
+      return data;
+    }
+    return null;
+  } catch {
+    // This will catch 401 Unauthorized or other network errors.
+    // We don't need the error object itself, just to know that the request failed.
+    return null;
   }
 };
 
-// -------------------- USERS --------------------
-
-export const clientFetchCurrentUser = async (): Promise<User> => {
+// --- USERS ---
+export const getMyProfile = async (): Promise<User> => {
   const { data } = await instance.get<User>("/users/me");
   return data;
 };
@@ -45,25 +59,7 @@ export const updateUser = async (updatedFields: UserUpdate): Promise<User> => {
   return data;
 };
 
-export const uploadImage = async (
-  file: File
-): Promise<{ photoUrl: string }> => {
-  const formData = new FormData();
-  formData.append("avatar", file);
-
-  const { data } = await instance.post<{ photoUrl: string }>(
-    "/users/upload-avatar",
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-  return data;
-};
-
-// -------------------- NOTES --------------------
+// --- NOTES ---
 export const clientFetchNotes = async (
   page: number,
   query: string = "",
