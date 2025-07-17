@@ -4,16 +4,13 @@
 import { createContext, useContext } from "react";
 import { useStoreWithEqualityFn } from "zustand/traditional";
 import {
-  AuthStoreType, // Імпортуємо тип стану стору (інтерфейс, який ми визначили)
-  useAuth, // Імпортуємо сам хук/стор Zustand
+  AuthStore,
+  useAuthStore as useZustandCoreAuthStore, // <--- Перейменовано імпорт основного Zustand стору
 } from "@/lib/store/authStore";
-import { StoreApi, UseBoundStore } from "zustand"; // ОБОВ'ЯЗКОВО: імпортуємо StoreApi та UseBoundStore для коректної типізації
+import { StoreApi, UseBoundStore } from "zustand";
 
-// 1. Коригуємо тип AuthStoreContext
-// Він має зберігати інстанс Zustand-стору, який повертає функція create.
-// Це UseBoundStore<StoreApi<AuthStoreType>>
 export const AuthStoreContext = createContext<UseBoundStore<
-  StoreApi<AuthStoreType>
+  StoreApi<AuthStore>
 > | null>(null);
 
 export default function AuthStoreProvider({
@@ -21,26 +18,26 @@ export default function AuthStoreProvider({
 }: {
   children: React.ReactNode;
 }) {
-  // Передаємо сам хук useAuth до value провайдера контексту.
-  // useAuth вже є інстансом прив'язаного стору, створеного Zustand.
   return (
-    <AuthStoreContext.Provider value={useAuth}>
+    <AuthStoreContext.Provider value={useZustandCoreAuthStore}>
+      {" "}
+      {/* Використовуємо перейменований основний стор */}
       {children}
     </AuthStoreContext.Provider>
   );
 }
 
-// 2. Коригуємо типізацію хука useAuthStore
-// authStoreContext тепер буде мати коректний тип UseBoundStore<StoreApi<AuthStoreType>>
-export const useAuthStore = <T,>(selector: (state: AuthStoreType) => T): T => {
+// Перейменовано експортований хук, щоб уникнути конфлікту імен
+export const useAuthContextConsumer = <T,>(
+  selector: (state: AuthStore) => T
+): T => {
   const authStoreContext = useContext(AuthStoreContext);
 
   if (!authStoreContext) {
-    throw new Error(`useAuthStore must be used within AuthStoreProvider`);
+    throw new Error(
+      `useAuthContextConsumer must be used within AuthStoreProvider`
+    );
   }
 
-  // useStoreWithEqualityFn очікує StoreApi як перший аргумент.
-  // authStoreContext (який є UseBoundStore<StoreApi<AuthStoreType>>)
-  // можна передати напряму, оскільки UseBoundStore включає StoreApi.
   return useStoreWithEqualityFn(authStoreContext, selector);
 };

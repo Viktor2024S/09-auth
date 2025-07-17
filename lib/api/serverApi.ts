@@ -1,4 +1,5 @@
-import instance from "./api";
+// lib/api/serverApi.ts
+import { nextApi } from "./api"; // <--- Змінено імпорт на іменований
 import { Note, NoteData } from "@/types/note";
 import { User } from "@/types/user";
 import { AxiosResponse, AxiosError } from "axios";
@@ -37,7 +38,7 @@ export const fetchNotes = async (
   console.log("DEBUG: fetchNotes - Sending Cookie header:", cookieHeader); // DEBUG LOG
 
   try {
-    const { data } = await instance.get<PaginatedNotesResponse>(
+    const { data } = await nextApi.get<PaginatedNotesResponse>( // <--- Змінено instance на nextApi
       `/notes?${params.toString()}`,
       {
         headers: {
@@ -64,7 +65,8 @@ export const fetchNoteById = async (id: string): Promise<Note> => {
   const cookieHeader = await getCookieHeader();
   console.log("DEBUG: fetchNoteById - Sending Cookie header:", cookieHeader); // DEBUG LOG
   try {
-    const { data } = await instance.get<Note>(`/notes/${id}`, {
+    const { data } = await nextApi.get<Note>(`/notes/${id}`, {
+      // <--- Змінено instance на nextApi
       headers: {
         ...(cookieHeader && { Cookie: cookieHeader }),
       },
@@ -88,7 +90,8 @@ export const createNote = async (noteData: NoteData): Promise<Note> => {
   const cookieHeader = await getCookieHeader();
   console.log("DEBUG: createNote - Sending Cookie header:", cookieHeader); // DEBUG LOG
   try {
-    const { data } = await instance.post<Note>("/notes", noteData, {
+    const { data } = await nextApi.post<Note>("/notes", noteData, {
+      // <--- Змінено instance на nextApi
       headers: {
         ...(cookieHeader && { Cookie: cookieHeader }),
       },
@@ -117,7 +120,8 @@ export const serverCheckSession = async (): Promise<
     cookieHeader
   ); // DEBUG LOG
   try {
-    return instance.get<User | object>("/auth/session", {
+    return nextApi.get<User | object>("/auth/session", {
+      // <--- Змінено instance на nextApi
       headers: {
         ...(cookieHeader && { Cookie: cookieHeader }),
       },
@@ -150,7 +154,8 @@ export const getServerSideProfile = async (): Promise<User | null> => {
       return null;
     }
 
-    const { data } = await instance.get<User>("/users/me", {
+    const { data } = await nextApi.get<User>("/users/me", {
+      // <--- Змінено instance на nextApi
       headers: {
         ...(cookieHeader && { Cookie: cookieHeader }),
       },

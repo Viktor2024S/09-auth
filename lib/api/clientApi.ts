@@ -1,4 +1,5 @@
-import instance from "./api";
+// lib/api/clientApi.ts
+import { nextApi } from "./api"; // <--- Змінено імпорт на іменований
 import { User, UserAuth, UserUpdate } from "@/types/user";
 import { Note, NoteData } from "@/types/note";
 
@@ -10,43 +11,33 @@ interface PaginatedNotesResponse {
 // -------------------- AUTHENTICATION --------------------
 
 export const registerUser = async (credentials: UserAuth): Promise<User> => {
-  const { data } = await instance.post<User>("/auth/register", credentials);
+  const { data } = await nextApi.post<User>("/auth/register", credentials); // <--- Змінено instance на nextApi
   return data;
 };
 
 export const loginUser = async (credentials: UserAuth): Promise<User> => {
-  const { data } = await instance.post<User>("/auth/login", credentials);
+  const { data } = await nextApi.post<User>("/auth/login", credentials); // <--- Змінено instance на nextApi
   return data;
 };
 
 export const logoutUser = async (): Promise<void> => {
-  await instance.post("/auth/logout");
+  await nextApi.post("/auth/logout"); // <--- Змінено instance на nextApi
 };
 
-// export const checkSession = async (): Promise<{ data: User | null }> => {
-//   try {
-//     const { data } = await instance.get<User | null>("/auth/session");
-//     return { data };
-//   } catch (error) {
-//     console.error("Session check failed:", error);
-//     return { data: null };
-//   }
-// };
-
 export const checkSession = async (): Promise<User | null> => {
-  const { data } = await instance.get<User | null>("/auth/session");
+  const { data } = await nextApi.get<User | null>("/auth/session"); // <--- Змінено instance на nextApi
   return data;
 };
 
 // -------------------- USERS --------------------
 
 export const clientFetchCurrentUser = async (): Promise<User> => {
-  const { data } = await instance.get<User>("/users/me");
+  const { data } = await nextApi.get<User>("/users/me"); // <--- Змінено instance на nextApi
   return data;
 };
 
 export const updateUser = async (updatedFields: UserUpdate): Promise<User> => {
-  const { data } = await instance.patch<User>("/users/me", updatedFields);
+  const { data } = await nextApi.patch<User>("/users/me", updatedFields); // <--- Змінено instance на nextApi
   return data;
 };
 
@@ -56,7 +47,7 @@ export const uploadImage = async (
   const formData = new FormData();
   formData.append("avatar", file);
 
-  const { data } = await instance.post<{ photoUrl: string }>(
+  const { data } = await nextApi.post<{ photoUrl: string }>( // <--- Змінено instance на nextApi
     "/users/upload-avatar",
     formData,
     {
@@ -78,23 +69,23 @@ export const clientFetchNotes = async (
   if (query) params.append("search", query);
   if (tag && tag !== "All") params.append("tag", tag);
 
-  const { data } = await instance.get<PaginatedNotesResponse>(
+  const { data } = await nextApi.get<PaginatedNotesResponse>( // <--- Змінено instance на nextApi
     `/notes?${params.toString()}`
   );
   return data;
 };
 
 export const clientFetchNoteById = async (id: string): Promise<Note> => {
-  const { data } = await instance.get<Note>(`/notes/${id}`);
+  const { data } = await nextApi.get<Note>(`/notes/${id}`); // <--- Змінено instance на nextApi
   return data;
 };
 
 export const createNote = async (noteData: NoteData): Promise<Note> => {
-  const { data } = await instance.post<Note>("/notes", noteData);
+  const { data } = await nextApi.post<Note>("/notes", noteData); // <--- Змінено instance на nextApi
   return data;
 };
 
 export const deleteNote = async (id: string): Promise<Note> => {
-  const { data } = await instance.delete<Note>(`/notes/${id}`);
+  const { data } = await nextApi.delete<Note>(`/notes/${id}`); // <--- Змінено instance на nextApi
   return data;
 };

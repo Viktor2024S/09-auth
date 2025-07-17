@@ -2,23 +2,22 @@
 import { create } from "zustand";
 import { User } from "@/types/user";
 
-// Визначення інтерфейсу стану автентифікації
-export type AuthStoreType = {
-  isAuth: boolean;
+// Експортуємо тип AuthStore, щоб його можна було використовувати в інших файлах
+export type AuthStore = {
+  // <--- Додано 'export' тут
+  isAuthenticated: boolean;
   user: User | null;
   setUser: (user: User) => void;
-  clearAuth: () => void;
+  clearIsAuthenticated: () => void;
 };
 
-export const useAuth = create<AuthStoreType>()((set) => ({
-  isAuth: false,
+export const useAuthStore = create<AuthStore>()((set) => ({
+  isAuthenticated: false,
   user: null,
-  // Функція для встановлення користувача та статусу автентифікації
-  setUser: (user: User) => set({ user, isAuth: true }),
-  // Функція для очищення даних автентифікації
-  clearAuth: () =>
-    set({
-      isAuth: false,
-      user: null,
-    }),
+  setUser: (user: User) => {
+    set(() => ({ user, isAuthenticated: true }));
+  },
+  clearIsAuthenticated: () => {
+    set(() => ({ user: null, isAuthenticated: false }));
+  },
 }));
