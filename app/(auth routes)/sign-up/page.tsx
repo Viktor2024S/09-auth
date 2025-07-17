@@ -4,20 +4,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { registerUser } from "@/lib/api/clientApi";
-// ВИПРАВЛЕНО: Змінено шлях імпорту для useAuthStore
 import { useAuthStore } from "@/lib/store/authStore";
 import { UserAuth } from "@/types/user";
 import toast from "react-hot-toast";
 import css from "./SignUpPage.module.css";
 import { AxiosError } from "axios";
-// ВИПРАВЛЕНО: Змінено імпорт типу з AuthStoreType на AuthStore
 import { AuthStore } from "@/lib/store/authStore";
 
 export default function SignUpPage() {
   const router = useRouter();
   const [error, setError] = useState("");
-
-  // ВИПРАВЛЕНО: Використання правильної назви типу AuthStore
   const setUser = useAuthStore((state: AuthStore) => state.setUser);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

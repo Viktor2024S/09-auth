@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth"; // Імпортуємо хук useAuth від ментора
+import { useAuth } from "@/hooks/useAuth";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -11,9 +11,8 @@ type Props = {
 };
 
 export default function AuthStoreProvider({ children }: Props) {
-  // Назва компонента за замовчуванням
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
-  // Отримуємо isAuthenticated, isLoading та reCheckAuth з хука useAuth від ментора
+
   const { isAuthenticated, isLoading, reCheckAuth } = useAuth();
   const pathname = usePathname();
 
