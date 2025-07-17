@@ -1,5 +1,5 @@
 // lib/api/clientApi.ts
-import { nextApi } from "./api"; // <--- Змінено імпорт на іменований
+import { nextApi } from "./api"; 
 import { User, UserAuth, UserUpdate } from "@/types/user";
 import { Note, NoteData } from "@/types/note";
 
@@ -11,33 +11,33 @@ interface PaginatedNotesResponse {
 // -------------------- AUTHENTICATION --------------------
 
 export const registerUser = async (credentials: UserAuth): Promise<User> => {
-  const { data } = await nextApi.post<User>("/auth/register", credentials); // <--- Змінено instance на nextApi
+  const { data } = await nextApi.post<User>("/auth/register", credentials); 
   return data;
 };
 
 export const loginUser = async (credentials: UserAuth): Promise<User> => {
-  const { data } = await nextApi.post<User>("/auth/login", credentials); // <--- Змінено instance на nextApi
+  const { data } = await nextApi.post<User>("/auth/login", credentials); /
   return data;
 };
 
 export const logoutUser = async (): Promise<void> => {
-  await nextApi.post("/auth/logout"); // <--- Змінено instance на nextApi
+  await nextApi.post("/auth/logout"); 
 };
 
 export const checkSession = async (): Promise<User | null> => {
-  const { data } = await nextApi.get<User | null>("/auth/session"); // <--- Змінено instance на nextApi
+  const { data } = await nextApi.get<User | null>("/auth/session"); 
   return data;
 };
 
 // -------------------- USERS --------------------
 
 export const clientFetchCurrentUser = async (): Promise<User> => {
-  const { data } = await nextApi.get<User>("/users/me"); // <--- Змінено instance на nextApi
+  const { data } = await nextApi.get<User>("/users/me"); 
   return data;
 };
 
 export const updateUser = async (updatedFields: UserUpdate): Promise<User> => {
-  const { data } = await nextApi.patch<User>("/users/me", updatedFields); // <--- Змінено instance на nextApi
+  const { data } = await nextApi.patch<User>("/users/me", updatedFields); 
   return data;
 };
 
@@ -47,7 +47,7 @@ export const uploadImage = async (
   const formData = new FormData();
   formData.append("avatar", file);
 
-  const { data } = await nextApi.post<{ photoUrl: string }>( // <--- Змінено instance на nextApi
+  const { data } = await nextApi.post<{ photoUrl: string }>( 
     "/users/upload-avatar",
     formData,
     {
@@ -69,23 +69,23 @@ export const clientFetchNotes = async (
   if (query) params.append("search", query);
   if (tag && tag !== "All") params.append("tag", tag);
 
-  const { data } = await nextApi.get<PaginatedNotesResponse>( // <--- Змінено instance на nextApi
+  const { data } = await nextApi.get<PaginatedNotesResponse>( 
     `/notes?${params.toString()}`
   );
   return data;
 };
 
 export const clientFetchNoteById = async (id: string): Promise<Note> => {
-  const { data } = await nextApi.get<Note>(`/notes/${id}`); // <--- Змінено instance на nextApi
+  const { data } = await nextApi.get<Note>(`/notes/${id}`); 
   return data;
 };
 
 export const createNote = async (noteData: NoteData): Promise<Note> => {
-  const { data } = await nextApi.post<Note>("/notes", noteData); // <--- Змінено instance на nextApi
+  const { data } = await nextApi.post<Note>("/notes", noteData); 
   return data;
 };
 
 export const deleteNote = async (id: string): Promise<Note> => {
-  const { data } = await nextApi.delete<Note>(`/notes/${id}`); // <--- Змінено instance на nextApi
+  const { data } = await nextApi.delete<Note>(`/notes/${id}`); 
   return data;
 };

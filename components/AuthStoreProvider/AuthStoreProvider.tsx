@@ -5,7 +5,7 @@ import { createContext, useContext } from "react";
 import { useStoreWithEqualityFn } from "zustand/traditional";
 import {
   AuthStore,
-  useAuthStore as useZustandCoreAuthStore, // <--- Перейменовано імпорт основного Zustand стору
+  useAuthStore as useZustandCoreAuthStore,
 } from "@/lib/store/authStore";
 import { StoreApi, UseBoundStore } from "zustand";
 
@@ -21,13 +21,11 @@ export default function AuthStoreProvider({
   return (
     <AuthStoreContext.Provider value={useZustandCoreAuthStore}>
       {" "}
-      {/* Використовуємо перейменований основний стор */}
       {children}
     </AuthStoreContext.Provider>
   );
 }
 
-// Перейменовано експортований хук, щоб уникнути конфлікту імен
 export const useAuthContextConsumer = <T,>(
   selector: (state: AuthStore) => T
 ): T => {

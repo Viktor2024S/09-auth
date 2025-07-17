@@ -1,5 +1,5 @@
 // lib/api/serverApi.ts
-import { nextApi } from "./api"; // <--- Змінено імпорт на іменований
+import { nextApi } from "./api";
 import { Note, NoteData } from "@/types/note";
 import { User } from "@/types/user";
 import { AxiosResponse, AxiosError } from "axios";
@@ -38,7 +38,7 @@ export const fetchNotes = async (
   console.log("DEBUG: fetchNotes - Sending Cookie header:", cookieHeader); // DEBUG LOG
 
   try {
-    const { data } = await nextApi.get<PaginatedNotesResponse>( // <--- Змінено instance на nextApi
+    const { data } = await nextApi.get<PaginatedNotesResponse>(
       `/notes?${params.toString()}`,
       {
         headers: {
@@ -66,7 +66,6 @@ export const fetchNoteById = async (id: string): Promise<Note> => {
   console.log("DEBUG: fetchNoteById - Sending Cookie header:", cookieHeader); // DEBUG LOG
   try {
     const { data } = await nextApi.get<Note>(`/notes/${id}`, {
-      // <--- Змінено instance на nextApi
       headers: {
         ...(cookieHeader && { Cookie: cookieHeader }),
       },
@@ -91,7 +90,6 @@ export const createNote = async (noteData: NoteData): Promise<Note> => {
   console.log("DEBUG: createNote - Sending Cookie header:", cookieHeader); // DEBUG LOG
   try {
     const { data } = await nextApi.post<Note>("/notes", noteData, {
-      // <--- Змінено instance на nextApi
       headers: {
         ...(cookieHeader && { Cookie: cookieHeader }),
       },
@@ -121,7 +119,6 @@ export const serverCheckSession = async (): Promise<
   ); // DEBUG LOG
   try {
     return nextApi.get<User | object>("/auth/session", {
-      // <--- Змінено instance на nextApi
       headers: {
         ...(cookieHeader && { Cookie: cookieHeader }),
       },
@@ -155,7 +152,6 @@ export const getServerSideProfile = async (): Promise<User | null> => {
     }
 
     const { data } = await nextApi.get<User>("/users/me", {
-      // <--- Змінено instance на nextApi
       headers: {
         ...(cookieHeader && { Cookie: cookieHeader }),
       },

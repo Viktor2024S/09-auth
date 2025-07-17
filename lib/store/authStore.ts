@@ -2,9 +2,7 @@
 import { create } from "zustand";
 import { User } from "@/types/user";
 
-// Експортуємо тип AuthStore, щоб його можна було використовувати в інших файлах
 export type AuthStore = {
-  // <--- Додано 'export' тут
   isAuthenticated: boolean;
   user: User | null;
   setUser: (user: User) => void;

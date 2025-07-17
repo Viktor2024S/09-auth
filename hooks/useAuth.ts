@@ -22,7 +22,7 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const signOut = async () => {
-    await logout(); // Це викличе logoutUser з clientApi
+    await logout();
     router.replace("/sign-in");
   };
 
