@@ -1,7 +1,8 @@
-// lib/api/clientApi.ts
 import { nextApi } from "./api";
 import { User, UserAuth, UserUpdate } from "@/types/user";
 import { Note, NoteData } from "@/types/note";
+import { UserRequest, CheckSessionResponse } from "@/types/user";
+import { AxiosError } from "axios";
 
 interface PaginatedNotesResponse {
   notes: Note[];

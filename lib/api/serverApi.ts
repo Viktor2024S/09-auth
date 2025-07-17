@@ -1,8 +1,6 @@
-// lib/api/serverApi.ts
 import { nextApi } from "./api";
 import { Note, NoteData } from "@/types/note";
 import { User } from "@/types/user";
-import { AxiosResponse, AxiosError } from "axios";
 import { cookies } from "next/headers";
 
 interface PaginatedNotesResponse {
@@ -16,7 +14,7 @@ const getCookieHeader = async () => {
     .getAll()
     .map((c) => `${c.name}=${c.value}`)
     .join("; ");
-  console.log("DEBUG: getCookieHeader() result:", cookiesString); // DEBUG LOG
+  console.log("DEBUG: getCookieHeader() result:", cookiesString);
   return cookiesString;
 };
 
@@ -34,8 +32,8 @@ export const fetchNotes = async (
   console.log(
     "DEBUG: fetchNotes - Request URL:",
     `/notes?${params.toString()}`
-  ); // DEBUG LOG
-  console.log("DEBUG: fetchNotes - Sending Cookie header:", cookieHeader); // DEBUG LOG
+  );
+  console.log("DEBUG: fetchNotes - Sending Cookie header:", cookieHeader);
 
   try {
     const { data } = await nextApi.get<PaginatedNotesResponse>(
@@ -63,7 +61,7 @@ export const fetchNotes = async (
 
 export const fetchNoteById = async (id: string): Promise<Note> => {
   const cookieHeader = await getCookieHeader();
-  console.log("DEBUG: fetchNoteById - Sending Cookie header:", cookieHeader); // DEBUG LOG
+  console.log("DEBUG: fetchNoteById - Sending Cookie header:", cookieHeader);
   try {
     const { data } = await nextApi.get<Note>(`/notes/${id}`, {
       headers: {
@@ -87,7 +85,7 @@ export const fetchNoteById = async (id: string): Promise<Note> => {
 
 export const createNote = async (noteData: NoteData): Promise<Note> => {
   const cookieHeader = await getCookieHeader();
-  console.log("DEBUG: createNote - Sending Cookie header:", cookieHeader); // DEBUG LOG
+  console.log("DEBUG: createNote - Sending Cookie header:", cookieHeader);
   try {
     const { data } = await nextApi.post<Note>("/notes", noteData, {
       headers: {
