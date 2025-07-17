@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useAuthStore } from "@/components/AuthStoreProvider/AuthStoreProvider";
+import { useAuthStore } from "@/lib/store/authStore";
 import { updateUser, uploadImage } from "@/lib/api/clientApi";
 import { UserUpdate } from "@/types/user";
 import toast from "react-hot-toast";
