@@ -1,3 +1,4 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import Header from "@/components/Header/Header";
@@ -48,11 +49,12 @@ export default function RootLayout({
     <html lang="en" className={`${roboto.variable}`}>
       <body>
         <Providers>
-          {" "}
           <Header />
-          <main className="main-content">{children}</main>
+          <main className="main-content">
+            {children}
+            <div className="modal-container">{modal}</div>
+          </main>
           <Footer />
-          <div className="modal-container">{modal}</div>
         </Providers>
       </body>
     </html>

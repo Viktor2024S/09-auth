@@ -3,17 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/lib/api/clientApi";
-import { useAuthStore } from "@/components/AuthStoreProvider/AuthStoreProvider";
+import { useAuthStore } from "@/lib/store/authStore";
 import { UserAuth } from "@/types/user";
 import toast from "react-hot-toast";
 import css from "./SignInPage.module.css";
 import { AxiosError } from "axios";
-import { AuthStoreType } from "@/lib/store/authStore";
+import { AuthStore } from "@/lib/store/authStore";
 
 export default function SignInPage() {
   const router = useRouter();
   const [error, setError] = useState("");
-  const setUser = useAuthStore((state: AuthStoreType) => state.setUser);
+  const setUser = useAuthStore((state: AuthStore) => state.setUser);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
