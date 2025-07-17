@@ -1,14 +1,15 @@
+// components/Header/Header.tsx
 "use client";
 import Link from "next/link";
 import AuthNavigation from "../AuthNavigation/AuthNavigation";
 import TagsMenu from "../TagsMenu/TagsMenu";
-import { useAuthStore } from "@/components/AuthStoreProvider/AuthStoreProvider";
+import { useAuthStore } from "@/lib/store/authStore";
 import css from "./Header.module.css";
-import { AuthStoreType } from "@/lib/store/authStore";
+import { AuthStore } from "@/lib/store/authStore";
 
 export default function Header() {
-  const { isAuth } = useAuthStore((state: AuthStoreType) => ({
-    isAuth: state.isAuth,
+  const { isAuthenticated } = useAuthStore((state: AuthStore) => ({
+    isAuthenticated: state.isAuthenticated,
   }));
 
   return (
@@ -24,7 +25,7 @@ export default function Header() {
                 Home
               </Link>
             </li>
-            {isAuth && (
+            {isAuthenticated && (
               <li>
                 <TagsMenu />
               </li>
