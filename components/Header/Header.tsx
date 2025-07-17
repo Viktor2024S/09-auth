@@ -1,39 +1,38 @@
-// components/Header/Header.tsx
 "use client";
-import Link from "next/link";
-import AuthNavigation from "../AuthNavigation/AuthNavigation";
-import TagsMenu from "../TagsMenu/TagsMenu";
+
+import { useEffect } from "react";
+import { checkSession, getMe } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
-import css from "./Header.module.css";
-import { AuthStore } from "@/lib/store/authStore";
 
-const selectIsAuthenticated = (state: AuthStore) => state.isAuthenticated;
+type ChildrenProp = {
+  wrappedContent: React.ReactNode;
+};
 
-export default function Header() {
-  const isAuthenticated = useAuthStore(selectIsAuthenticated);
-
-  return (
-    <header className={css.header}>
-      <div className={css.container}>
-        <Link href="/" aria-label="Home" className={css.logo}>
-          NoteHub
-        </Link>
-        <nav aria-label="Main Navigation">
-          <ul className={css.navigation}>
-            <li>
-              <Link href="/" className={css.link}>
-                Home
-              </Link>
-            </li>
-            {isAuthenticated && (
-              <li>
-                <TagsMenu />
-              </li>
-            )}
-            <AuthNavigation />
-          </ul>
-        </nav>
-      </div>
-    </header>
+const ApplicationAuthenticator = ({ wrappedContent }: ChildrenProp) => {
+  const setUserDataInStore = useAuthStore((state) => state.setUser);
+  const resetAuthStatusInStore = useAuthStore(
+    (state) => state.clearIsAuthenticated
   );
-}
+
+  useEffect(() => {
+    const initializeUserSession = async () => {
+      try {
+        const sessionVerificationResult = await checkSession();
+        if (sessionVerificationResult.success) {
+          const loggedInUser = await getMe();
+          if (loggedInUser) setUserDataInStore(loggedInUser);
+        } else {
+          resetAuthStatusInStore();
+        }
+      } catch (sessionCheckError) {
+        resetAuthStatusInStore();
+        console.error("Auth check failed:", sessionCheckError);
+      }
+    };
+    initializeUserSession();
+  }, [setUserDataInStore, resetAuthStatusInStore]);
+
+  return wrappedContent;
+};
+
+export default ApplicationAuthenticator;

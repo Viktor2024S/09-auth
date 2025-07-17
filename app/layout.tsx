@@ -1,44 +1,43 @@
-// app/layout.tsx
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
-import Header from "@/components/Header/Header";
+import AppNavigationBar from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
-import Providers from "@/app/providers";
+import QueryClientWrapper from "@/components/TanStackProvider/TanStackProvider";
+import ApplicationAuthenticator from "../components/AuthProvider/AuthProvider";
 import "modern-normalize/modern-normalize.css";
 import "./globals.css";
 
-const roboto = Roboto({
-  weight: ["400", "700"],
-  subsets: ["latin", "cyrillic"],
-  display: "swap",
+const mainAppFont = Roboto({
   variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: {
-    template: "%s | NoteHub",
-    default: "NoteHub - Your Personal Notes Manager",
-  },
+export const pageMetadata: Metadata = {
+  title: "NoteHub — Smart Note-Taking App",
   description:
-    "A simple and efficient application for managing personal notes.",
+    "NoteHub is a modern web application for creating, editing, and organizing your notes effortlessly. Keep track of your ideas, reminders, and to-do lists in one secure, accessible place.",
   openGraph: {
-    title: "NoteHub - Your Personal Notes Manager",
-    description: "Organize your thoughts, tasks, and ideas with NoteHub.",
-    url: "https://09-auth-pi.vercel.app/",
-    siteName: "NoteHub",
+    title: "NoteHub — Smart Note-Taking App",
+    description:
+      "Easily create, manage, and organize your notes online with NoteHub. A clean interface and powerful features designed to boost your productivity.",
+    url: "https://09-auth-ruddy-nine.vercel.app/",
     images: [
       {
         url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
         width: 1200,
         height: 630,
+        alt: "NoteHub — app got notes",
       },
     ],
-    locale: "en_US",
-    type: "website",
+  },
+  icons: {
+    icon: "/title-web.ico",
   },
 };
 
-export default function RootLayout({
+export default function ApplicationRootLayout({
   children,
   modal,
 }: Readonly<{
@@ -46,16 +45,18 @@ export default function RootLayout({
   modal: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${roboto.variable}`}>
-      <body>
-        <Providers>
-          <Header />
-          <main className="main-content">
-            {children}
-            <div className="modal-container">{modal}</div>
-          </main>
-          <Footer />
-        </Providers>
+    <html lang="en">
+      <body className={`${mainAppFont.variable}`}>
+        <QueryClientWrapper>
+          <ApplicationAuthenticator>
+            <AppNavigationBar />
+            <main>
+              {children}
+              {modal}
+            </main>
+            <Footer />
+          </ApplicationAuthenticator>
+        </QueryClientWrapper>
       </body>
     </html>
   );
