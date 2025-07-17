@@ -1,92 +1,82 @@
-import { nextApi } from "./api";
-import { User, UserAuth, UserUpdate } from "@/types/user";
-import { Note, NoteData } from "@/types/note";
+import type { Note, NewNote, NotesResponse } from "@/types/note";
+import { nextServer } from "./api";
+import { User } from "@/types/user";
 import { UserRequest, CheckSessionResponse } from "@/types/user";
 import { AxiosError } from "axios";
 
-interface PaginatedNotesResponse {
-  notes: Note[];
-  totalPages: number;
-}
+export const fetchNotes = async (
+  searchText: string,
+  page = 1,
+  perPage = 10,
+  tag?: string
+): Promise<NotesResponse> => {
+  const { data } = await nextServer.get<NotesResponse>("/notes", {
+    params: {
+      ...(searchText !== "" && { search: searchText }),
+      page,
+      perPage,
+      ...(tag && tag !== "All" && { tag }),
+    },
+  });
 
-// -------------------- AUTHENTICATION --------------------
-
-export const registerUser = async (credentials: UserAuth): Promise<User> => {
-  const { data } = await nextApi.post<User>("/auth/register", credentials);
   return data;
 };
 
-export const loginUser = async (credentials: UserAuth): Promise<User> => {
-  const { data } = await nextApi.post<User>("/auth/login", credentials);
+export const createNote = async (noteData: NewNote): Promise<Note> => {
+  const { data } = await nextServer.post<Note>("/notes", noteData);
   return data;
 };
 
-export const logoutUser = async (): Promise<void> => {
-  await nextApi.post("/auth/logout");
-};
-
-export const checkSession = async (): Promise<User | null> => {
-  const { data } = await nextApi.get<User | null>("/auth/session");
+export const deleteNote = async (notesId: string): Promise<Note> => {
+  const { data } = await nextServer.delete<Note>(`/notes/${notesId}`);
   return data;
 };
 
-// -------------------- USERS --------------------
-
-export const clientFetchCurrentUser = async (): Promise<User> => {
-  const { data } = await nextApi.get<User>("/users/me");
+export const fetchNoteById = async (id: string): Promise<Note> => {
+  const { data } = await nextServer.get<Note>(`/notes/${id}`);
   return data;
 };
 
-export const updateUser = async (updatedFields: UserUpdate): Promise<User> => {
-  const { data } = await nextApi.patch<User>("/users/me", updatedFields);
-  return data;
+export const register = async (data: UserRequest): Promise<User> => {
+  const response = await nextServer.post<User>("/auth/register", data);
+  return response.data;
 };
 
-export const uploadImage = async (
-  file: File
-): Promise<{ photoUrl: string }> => {
-  const formData = new FormData();
-  formData.append("avatar", file);
+export const login = async (data: UserRequest): Promise<User> => {
+  const response = await nextServer.post<User>("/auth/login", data);
+  return response.data;
+};
 
-  const { data } = await nextApi.post<{ photoUrl: string }>(
-    "/users/upload-avatar",
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+export const logout = async (): Promise<void> => {
+  await nextServer.post("/auth/logout");
+};
+
+export const checkSession = async (): Promise<{
+  success: boolean;
+  message: string;
+}> => {
+  try {
+    const { data, status } =
+      await nextServer.get<CheckSessionResponse>("/auth/session");
+    return { success: status === 200, message: data.message };
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message: string }>;
+    if (
+      axiosError.response?.status === 400 ||
+      axiosError.response?.status === 401
+    ) {
+      return { success: false, message: axiosError.response.data.message };
     }
-  );
+    throw error;
+  }
+};
+
+export const getMe = async (): Promise<User> => {
+  const { data } = await nextServer.get<User>("/users/me");
   return data;
 };
 
-// -------------------- NOTES --------------------
-export const clientFetchNotes = async (
-  page: number,
-  query: string = "",
-  tag: string | null = null
-): Promise<PaginatedNotesResponse> => {
-  const params = new URLSearchParams({ page: String(page), perPage: "12" });
-  if (query) params.append("search", query);
-  if (tag && tag !== "All") params.append("tag", tag);
-
-  const { data } = await nextApi.get<PaginatedNotesResponse>(
-    `/notes?${params.toString()}`
-  );
-  return data;
-};
-
-export const clientFetchNoteById = async (id: string): Promise<Note> => {
-  const { data } = await nextApi.get<Note>(`/notes/${id}`);
-  return data;
-};
-
-export const createNote = async (noteData: NoteData): Promise<Note> => {
-  const { data } = await nextApi.post<Note>("/notes", noteData);
-  return data;
-};
-
-export const deleteNote = async (id: string): Promise<Note> => {
-  const { data } = await nextApi.delete<Note>(`/notes/${id}`);
-  return data;
+export const updateUser = async (data: { username: string }): Promise<User> => {
+  const response = await nextServer.patch<User>("/users/me", data);
+  return response.data;
 };

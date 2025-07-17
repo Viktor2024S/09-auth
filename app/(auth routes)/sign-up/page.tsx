@@ -1,4 +1,3 @@
-// app/(auth routes)/sign-up/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -6,9 +5,7 @@ import { useRouter } from "next/navigation";
 import { registerUser } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import { UserAuth } from "@/types/user";
-import toast from "react-hot-toast";
 import css from "./SignUpPage.module.css";
-import { AxiosError } from "axios";
 import { AuthStore } from "@/lib/store/authStore";
 
 export default function SignUpPage() {
@@ -31,20 +28,13 @@ export default function SignUpPage() {
       const user = await registerUser(formValues);
       if (user) {
         setUser(user);
-        toast.success("Registration successful! Redirecting...");
         router.push("/profile");
       } else {
         setError("Registration failed. Please try again.");
-        toast.error("Registration failed.");
       }
     } catch (err) {
-      const axiosError = err as AxiosError<{ message: string }>;
-      console.error("Registration error:", axiosError);
-      setError(
-        axiosError.response?.data?.message ||
-          "Registration failed. Invalid credentials."
-      );
-      toast.error(axiosError.response?.data?.message || "Registration failed.");
+      console.error("Registration error:", err);
+      setError("An error occurred during registration. Please try again.");
     }
   };
 

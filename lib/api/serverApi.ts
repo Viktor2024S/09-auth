@@ -1,170 +1,61 @@
-import { nextApi } from "./api";
-import { Note, NoteData } from "@/types/note";
-import { User } from "@/types/user";
+import { nextServer } from "./api";
 import { cookies } from "next/headers";
+import { User } from "@/types/user";
+import { Note, NotesResponse } from "@/types/note";
 
-interface PaginatedNotesResponse {
-  notes: Note[];
-  totalPages: number;
-}
-
-const getCookieHeader = async () => {
+const getCookieHeader = async (): Promise<string> => {
   const cookieStore = await cookies();
-  const cookiesString = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ");
-  console.log("DEBUG: getCookieHeader() result:", cookiesString);
-  return cookiesString;
+  return cookieStore.toString();
 };
 
-export const fetchNotes = async (
-  page: number,
-  query: string = "",
-  tag: string | null = null
-): Promise<PaginatedNotesResponse> => {
-  const params = new URLSearchParams({ page: String(page), perPage: "12" });
-  if (query) params.append("search", query);
-  if (tag && tag !== "All") params.append("tag", tag);
-
+export const getUserFromServer = async (): Promise<User> => {
   const cookieHeader = await getCookieHeader();
-
-  console.log(
-    "DEBUG: fetchNotes - Request URL:",
-    `/notes?${params.toString()}`
-  );
-  console.log("DEBUG: fetchNotes - Sending Cookie header:", cookieHeader);
-
-  try {
-    const { data } = await nextApi.get<PaginatedNotesResponse>(
-      `/notes?${params.toString()}`,
-      {
-        headers: {
-          ...(cookieHeader && { Cookie: cookieHeader }),
-        },
-      }
-    );
-    return data;
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      console.error(
-        "AxiosError in fetchNotes:",
-        error.response?.status,
-        error.response?.data
-      );
-    } else {
-      console.error("Error in fetchNotes:", error);
-    }
-    throw error;
-  }
+  const { data } = await nextServer.get<User>("/users/me", {
+    headers: {
+      Cookie: cookieHeader,
+    },
+  });
+  return data;
 };
 
-export const fetchNoteById = async (id: string): Promise<Note> => {
+export const checkServerSession = async () => {
   const cookieHeader = await getCookieHeader();
-  console.log("DEBUG: fetchNoteById - Sending Cookie header:", cookieHeader);
-  try {
-    const { data } = await nextApi.get<Note>(`/notes/${id}`, {
-      headers: {
-        ...(cookieHeader && { Cookie: cookieHeader }),
-      },
-    });
-    return data;
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      console.error(
-        "AxiosError in fetchNoteById:",
-        error.response?.status,
-        error.response?.data
-      );
-    } else {
-      console.error("Error in fetchNoteById:", error);
-    }
-    throw error;
-  }
+  const response = await nextServer.get("/auth/session", {
+    headers: {
+      Cookie: cookieHeader,
+    },
+  });
+  return response;
 };
 
-export const createNote = async (noteData: NoteData): Promise<Note> => {
+export const fetchNoteByIdServer = async (id: string): Promise<Note> => {
   const cookieHeader = await getCookieHeader();
-  console.log("DEBUG: createNote - Sending Cookie header:", cookieHeader);
-  try {
-    const { data } = await nextApi.post<Note>("/notes", noteData, {
-      headers: {
-        ...(cookieHeader && { Cookie: cookieHeader }),
-      },
-    });
-    return data;
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      console.error(
-        "AxiosError in createNote:",
-        error.response?.status,
-        error.response?.data
-      );
-    } else {
-      console.error("Error in createNote:", error);
-    }
-    throw error;
-  }
+  const { data } = await nextServer.get<Note>(`/notes/${id}`, {
+    headers: {
+      Cookie: cookieHeader,
+    },
+  });
+  return data;
 };
 
-export const serverCheckSession = async (): Promise<
-  AxiosResponse<User | object>
-> => {
+export const fetchNotesServer = async (
+  searchText: string,
+  page = 1,
+  perPage = 10,
+  tag?: string
+): Promise<NotesResponse> => {
   const cookieHeader = await getCookieHeader();
-  console.log(
-    "DEBUG: serverCheckSession - Sending Cookie header:",
-    cookieHeader
-  ); // DEBUG LOG
-  try {
-    return nextApi.get<User | object>("/auth/session", {
-      headers: {
-        ...(cookieHeader && { Cookie: cookieHeader }),
-      },
-    });
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      console.error(
-        "AxiosError in serverCheckSession:",
-        error.response?.status,
-        error.response?.data
-      );
-    } else {
-      console.error("Error in serverCheckSession:", error);
-    }
-    throw error;
-  }
-};
+  const { data } = await nextServer.get<NotesResponse>("/notes", {
+    params: {
+      ...(searchText !== "" && { search: searchText }),
+      page,
+      perPage,
+      ...(tag && tag !== "All" && { tag }),
+    },
+    headers: {
+      Cookie: cookieHeader,
+    },
+  });
 
-export const getServerSideProfile = async (): Promise<User | null> => {
-  try {
-    const cookieHeader = await getCookieHeader();
-    console.log(
-      "DEBUG: getServerSideProfile - Sending Cookie header:",
-      cookieHeader
-    ); // DEBUG LOG
-    if (!cookieHeader) {
-      console.log(
-        "DEBUG: getServerSideProfile - No cookie header found, returning null."
-      ); // DEBUG LOG
-      return null;
-    }
-
-    const { data } = await nextApi.get<User>("/users/me", {
-      headers: {
-        ...(cookieHeader && { Cookie: cookieHeader }),
-      },
-    });
-    return data;
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      console.error(
-        "AxiosError in getServerSideProfile:",
-        error.response?.status,
-        error.response?.data
-      );
-    } else {
-      console.error("Error in getServerSideProfile:", error);
-    }
-    return null;
-  }
+  return data;
 };
