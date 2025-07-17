@@ -1,61 +1,69 @@
-// import { nextServer } from "./api";
-// import { cookies } from "next/headers";
-// import { User } from "@/types/user";
-// import { Note, NotesResponse } from "@/types/note";
+import { User } from "@/types/user";
+import { Note, NotesResponse } from "@/types/note";
+import { nextServer } from "./api";
+import { cookies } from "next/headers";
 
-// const getCookieHeader = async (): Promise<string> => {
-//   const cookieStore = await cookies();
-//   return cookieStore.toString();
-// };
+const retrieveRequestCookieHeader = async (): Promise<string> => {
+  const cookieJar = await cookies();
+  return cookieJar.toString();
+};
 
-// export const getUserFromServer = async (): Promise<User> => {
-//   const cookieHeader = await getCookieHeader();
-//   const { data } = await nextServer.get<User>("/users/me", {
-//     headers: {
-//       Cookie: cookieHeader,
-//     },
-//   });
-//   return data;
-// };
+export const fetchAuthenticatedUser = async (): Promise<User> => {
+  const requestCookieData = await retrieveRequestCookieHeader();
+  const { data: userDataResponse } = await nextServer.get<User>("/users/me", {
+    headers: {
+      Cookie: requestCookieData,
+    },
+  });
+  return userDataResponse;
+};
 
-// export const checkServerSession = async () => {
-//   const cookieHeader = await getCookieHeader();
-//   const response = await nextServer.get("/auth/session", {
-//     headers: {
-//       Cookie: cookieHeader,
-//     },
-//   });
-//   return response;
-// };
+export const validateServerSession = async () => {
+  const sessionCookieInfo = await retrieveRequestCookieHeader();
+  const sessionCheckResponse = await nextServer.get("/auth/session", {
+    headers: {
+      Cookie: sessionCookieInfo,
+    },
+  });
+  return sessionCheckResponse;
+};
 
-// export const fetchNoteByIdServer = async (id: string): Promise<Note> => {
-//   const cookieHeader = await getCookieHeader();
-//   const { data } = await nextServer.get<Note>(`/notes/${id}`, {
-//     headers: {
-//       Cookie: cookieHeader,
-//     },
-//   });
-//   return data;
-// };
+export const retrieveNoteDetailById = async (
+  noteEntryId: string
+): Promise<Note> => {
+  const noteCookieHeader = await retrieveRequestCookieHeader();
+  const { data: noteDetailPayload } = await nextServer.get<Note>(
+    `/notes/${noteEntryId}`,
+    {
+      headers: {
+        Cookie: noteCookieHeader,
+      },
+    }
+  );
+  return noteDetailPayload;
+};
 
-// export const fetchNotesServer = async (
-//   searchText: string,
-//   page = 1,
-//   perPage = 10,
-//   tag?: string
-// ): Promise<NotesResponse> => {
-//   const cookieHeader = await getCookieHeader();
-//   const { data } = await nextServer.get<NotesResponse>("/notes", {
-//     params: {
-//       ...(searchText !== "" && { search: searchText }),
-//       page,
-//       perPage,
-//       ...(tag && tag !== "All" && { tag }),
-//     },
-//     headers: {
-//       Cookie: cookieHeader,
-//     },
-//   });
+export const queryServerNotes = async (
+  queryText: string,
+  currentPage = 1,
+  itemsPerPage = 10,
+  tagParam?: string
+): Promise<NotesResponse> => {
+  const notesCookieInfo = await retrieveRequestCookieHeader();
+  const { data: notesCollectionData } = await nextServer.get<NotesResponse>(
+    "/notes",
+    {
+      params: {
+        ...(queryText !== "" && { search: queryText }),
+        page: currentPage,
+        perPage: itemsPerPage,
+        ...(tagParam && tagParam !== "All" && { tag: tagParam }),
+      },
+      headers: {
+        Cookie: notesCookieInfo,
+      },
+    }
+  );
 
-//   return data;
-// };
+  return notesCollectionData;
+};
