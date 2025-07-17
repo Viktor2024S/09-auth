@@ -1,13 +1,7 @@
-// hooks/useAuth.ts
 "use client";
-
-// Оновлений імпорт: функції автентифікації знаходяться у clientApi.ts
-import { checkSession, logoutUser as logout } from "@/lib/api/clientApi"; // <--- ОНОВЛЕНО тут
-
+import { checkSession, logoutUser as logout } from "@/lib/api/clientApi";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-// ... решта коду useAuth залишається такою ж, як ви надавали раніше ...
 
 const AUTH_CHANGE_EVENT = "auth-change";
 
@@ -28,12 +22,10 @@ export const useAuth = () => {
 
   const checkAuth = async () => {
     try {
-      const res = await checkSession(); // Це викличе checkSession з clientApi
+      const res = await checkSession();
       if (res) {
         setIsAuthenticated(true);
-        // ...
-      } else {
-        setIsAuthenticated(false);
+        return;
       }
     } catch (error) {
       console.error("Auth check failed:", error);
@@ -45,8 +37,11 @@ export const useAuth = () => {
 
   useEffect(() => {
     checkAuth();
+
     const handleAuthChange = () => checkAuth();
+
     window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
+
     return () => {
       window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
     };
