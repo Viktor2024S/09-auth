@@ -4,10 +4,11 @@ import AuthNavigation from "../AuthNavigation/AuthNavigation";
 import TagsMenu from "../TagsMenu/TagsMenu";
 import { useAuthStore } from "@/components/AuthStoreProvider/AuthStoreProvider";
 import css from "./Header.module.css";
+import { AuthStoreType } from "@/lib/store/authStore";
 
 export default function Header() {
-  const { isAuthenticated } = useAuthStore((state) => ({
-    isAuthenticated: state.isAuthenticated,
+  const { isAuth } = useAuthStore((state: AuthStoreType) => ({
+    isAuth: state.isAuth,
   }));
 
   return (
@@ -23,7 +24,7 @@ export default function Header() {
                 Home
               </Link>
             </li>
-            {isAuthenticated && (
+            {isAuth && (
               <li>
                 <TagsMenu />
               </li>

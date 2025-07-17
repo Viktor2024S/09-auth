@@ -1,46 +1,44 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { checkSession } from "@/lib/api/clientApi";
+import { useEffect, useCallback } from "react";
 
-import { useAuthStore } from "@/components/AuthStoreProvider/AuthStoreProvider"; //
-import Loader from "../Loader/Loader";
+import { useAuthStore } from "@/components/AuthStoreProvider/AuthStoreProvider";
+import { checkSession } from "@/lib/api/clientApi";
+import { AuthStoreType } from "@/lib/store/authStore";
 
 export default function AuthProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { setUser, clearIsAuthenticated } = useAuthStore((state) => ({
-    setUser: state.setUser,
-    clearIsAuthenticated: state.clearIsAuthenticated,
-  }));
+  const { user, isAuth, setUser, clearAuth } = useAuthStore(
+    (state: AuthStoreType) => ({
+      user: state.user,
+      isAuth: state.isAuth,
+      setUser: state.setUser,
+      clearAuth: state.clearAuth,
+    })
+  );
 
-  const { isLoading } = useQuery({
-    queryKey: ["session"],
-    queryFn: async () => {
-      try {
-        const response = await checkSession();
-        if (response.data) {
-          setUser(response.data);
-        } else {
-          clearIsAuthenticated();
-        }
-        return response.data;
-      } catch (error) {
-        console.error("Authentication check failed:", error);
-        clearIsAuthenticated();
-        return null;
+  const verifySession = useCallback(async () => {
+    try {
+      const userData = await checkSession();
+      if (userData) {
+        setUser(userData);
+      } else {
+        clearAuth();
       }
-    },
-    retry: 1,
-    refetchOnWindowFocus: false,
-    staleTime: Infinity,
-  });
+    } catch (error) {
+      console.error("Помилка перевірки сесії:", error);
+      clearAuth();
+    }
+  }, [setUser, clearAuth]);
 
-  if (isLoading) {
-    return <Loader />;
-  }
+  useEffect(() => {
+    if (!isAuth && user === null) {
+      verifySession();
+    }
+  }, [isAuth, user, verifySession]);
 
   return <>{children}</>;
 }

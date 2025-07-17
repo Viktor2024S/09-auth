@@ -10,9 +10,9 @@ import css from "./AuthNavigation.module.css";
 export default function AuthNavigation() {
   const { isAuthenticated, user, clearIsAuthenticated } = useAuthStore(
     (state) => ({
-      isAuthenticated: state.isAuthenticated,
+      isAuthenticated: state.isAuth,
       user: state.user,
-      clearIsAuthenticated: state.clearIsAuthenticated,
+      clearIsAuthenticated: state.clearAuth,
     })
   );
 

@@ -23,14 +23,19 @@ export const logoutUser = async (): Promise<void> => {
   await instance.post("/auth/logout");
 };
 
-export const checkSession = async (): Promise<{ data: User | null }> => {
-  try {
-    const { data } = await instance.get<User | null>("/auth/session");
-    return { data };
-  } catch (error) {
-    console.error("Session check failed:", error);
-    return { data: null };
-  }
+// export const checkSession = async (): Promise<{ data: User | null }> => {
+//   try {
+//     const { data } = await instance.get<User | null>("/auth/session");
+//     return { data };
+//   } catch (error) {
+//     console.error("Session check failed:", error);
+//     return { data: null };
+//   }
+// };
+
+export const checkSession = async (): Promise<User | null> => {
+  const { data } = await instance.get<User | null>("/auth/session");
+  return data;
 };
 
 // -------------------- USERS --------------------

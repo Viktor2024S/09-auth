@@ -8,11 +8,13 @@ import { UserAuth } from "@/types/user";
 import toast from "react-hot-toast";
 import css from "./SignUpPage.module.css";
 import { AxiosError } from "axios";
+import { AuthStoreType } from "@/lib/store/authStore";
 
 export default function SignUpPage() {
   const router = useRouter();
   const [error, setError] = useState("");
-  const setUser = useAuthStore((state) => state.setUser);
+
+  const setUser = useAuthStore((state: AuthStoreType) => state.setUser);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
