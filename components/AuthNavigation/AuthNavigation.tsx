@@ -8,7 +8,7 @@ import { useAuth, triggerAuthChange } from "@/hooks/useAuth";
 import css from "./AuthNavigation.module.css";
 
 export default function AuthNavigation() {
-  const { isAuthenticated, user, signOut } = useAuth();
+  const { isAuthenticated, signOut } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -32,14 +32,12 @@ export default function AuthNavigation() {
               Profile
             </Link>
           </li>
-          {user && (
-            <li className={css.navigationItem}>
-              <p className={css.userEmail}>{user.email}</p>{" "}
-              <button onClick={handleLogout} className={css.logoutButton}>
-                Logout
-              </button>
-            </li>
-          )}
+
+          <li className={css.navigationItem}>
+            <button onClick={handleLogout} className={css.logoutButton}>
+              Logout
+            </button>
+          </li>
         </>
       ) : (
         <>
