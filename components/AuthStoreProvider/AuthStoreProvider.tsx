@@ -1,41 +1,53 @@
-// components/AuthStoreProvider/AuthStoreProvider.tsx
 "use client";
 
-import { createContext, useContext } from "react";
-import { useStoreWithEqualityFn } from "zustand/traditional";
-import {
-  AuthStore,
-  useAuthStore as useZustandCoreAuthStore,
-} from "@/lib/store/authStore";
-import { StoreApi, UseBoundStore } from "zustand";
+import { useAuth } from "@/hooks/useAuth"; // Імпортуємо хук useAuth від ментора
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export const AuthStoreContext = createContext<UseBoundStore<
-  StoreApi<AuthStore>
-> | null>(null);
+const privateRoutes = ["/profile", "/notes"];
 
-export default function AuthStoreProvider({
-  children,
-}: {
+type Props = {
   children: React.ReactNode;
-}) {
-  return (
-    <AuthStoreContext.Provider value={useZustandCoreAuthStore}>
-      {" "}
-      {children}
-    </AuthStoreContext.Provider>
-  );
-}
+};
 
-export const useAuthContextConsumer = <T,>(
-  selector: (state: AuthStore) => T
-): T => {
-  const authStoreContext = useContext(AuthStoreContext);
+export default function AuthStoreProvider({ children }: Props) {
+  // Назва компонента за замовчуванням
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
+  // Отримуємо isAuthenticated, isLoading та reCheckAuth з хука useAuth від ментора
+  const { isAuthenticated, isLoading, reCheckAuth } = useAuth();
+  const pathname = usePathname();
 
-  if (!authStoreContext) {
-    throw new Error(
-      `useAuthContextConsumer must be used within AuthStoreProvider`
-    );
+  const isPrivate = privateRoutes.some((route) => pathname.startsWith(route));
+
+  useEffect(() => {
+    setHasCheckedAuth(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const fn = async () => {
+      try {
+        if (isPrivate && !hasCheckedAuth) {
+          await reCheckAuth();
+          setHasCheckedAuth(true);
+        }
+      } catch (error) {
+        console.error("Error during auth check in AuthStoreProvider:", error);
+      } finally {
+      }
+    };
+    fn();
+  }, [pathname, isPrivate, reCheckAuth, hasCheckedAuth]);
+
+  if (isLoading || (isPrivate && !hasCheckedAuth)) {
+    return <div>Loading...</div>;
   }
 
-  return useStoreWithEqualityFn(authStoreContext, selector);
-};
+  if (!isAuthenticated && isPrivate) {
+    // Якщо користувач не автентифікований і маршрут приватний,
+    // тут можна додати логіку перенаправлення, якщо useAuth не робить цього автоматично.
+    // console.log('User not authenticated for private route.');
+    return null; // Або `<Navigate to="/sign-in" />`
+  }
+
+  return <>{children}</>;
+}
