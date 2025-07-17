@@ -2,82 +2,74 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { loginUser } from "@/lib/api/clientApi";
+import componentStyles from "./SignInPage.module.css";
 import { useAuthStore } from "@/lib/store/authStore";
-import { UserAuth } from "@/types/user";
-import toast from "react-hot-toast";
-import css from "./SignInPage.module.css";
-import { AxiosError } from "axios";
-import { AuthStore } from "@/lib/store/authStore";
+import { UserRequest } from "@/types/user";
+import { login } from "@/lib/api/clientApi";
 
-export default function SignInPage() {
-  const router = useRouter();
-  const [error, setError] = useState("");
-  const setUser = useAuthStore((state: AuthStore) => state.setUser);
+const UserLoginPage = () => {
+  const pageNavigator = useRouter();
+  const [displayError, setLoginError] = useState("");
+  const updateAuthUser = useAuthStore((state) => state.setUser);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
-
-    const formData = new FormData(event.currentTarget);
-
-    const formValues: UserAuth = {
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
+  const handleLoginAttempt = async (inputFormData: FormData) => {
+    const credentials: UserRequest = {
+      email: inputFormData.get("email") as string,
+      password: inputFormData.get("password") as string,
     };
 
     try {
-      const user = await loginUser(formValues);
-      if (user) {
-        setUser(user);
-        toast.success("Login successful! Redirecting...");
-        router.push("/profile");
+      const loginResponse = await login(credentials);
+      if (loginResponse) {
+        updateAuthUser(loginResponse);
+        pageNavigator.push("/profile");
       } else {
-        setError("Login failed. Please try again.");
-        toast.error("Login failed.");
+        setLoginError("Invalid email or password");
       }
-    } catch (err) {
-      const axiosError = err as AxiosError<{ message: string }>;
-      console.error("Login error:", axiosError);
-      setError(
-        axiosError.response?.data?.message ||
-          "Login failed. Invalid credentials."
-      );
-      toast.error(axiosError.response?.data?.message || "Login failed.");
+    } catch (catchException) {
+      console.error("Login error:", catchException);
+      setLoginError("Something went wrong. Please try again.");
     }
   };
 
   return (
-    <main className={css.mainContent}>
-      <h1 className={css.formTitle}>Sign in</h1>
-      <form className={css.form} onSubmit={handleSubmit}>
-        <div className={css.formGroup}>
+    <main className={componentStyles.mainContent}>
+      <form className={componentStyles.form} action={handleLoginAttempt}>
+        <h1 className={componentStyles.formTitle}>User Login</h1>
+        {displayError && (
+          <p className={componentStyles.error}>{displayError}</p>
+        )}
+
+        <div className={componentStyles.formGroup}>
           <label htmlFor="email">Email</label>
           <input
             id="email"
             type="email"
             name="email"
-            className={css.input}
+            className={componentStyles.input}
             required
           />
         </div>
-        <div className={css.formGroup}>
+
+        <div className={componentStyles.formGroup}>
           <label htmlFor="password">Password</label>
           <input
             id="password"
             type="password"
             name="password"
-            className={css.input}
+            className={componentStyles.input}
             required
           />
         </div>
-        <div className={css.actions}>
-          <button type="submit" className={css.submitButton}>
-            Log in
+
+        <div className={componentStyles.actions}>
+          <button type="submit" className={componentStyles.submitButton}>
+            Sign In
           </button>
         </div>
-        {error && <p className={css.error}>{error}</p>}
       </form>
     </main>
   );
-}
+};
+
+export default UserLoginPage;

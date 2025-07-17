@@ -2,73 +2,69 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { registerUser } from "@/lib/api/clientApi";
+import localStyles from "./SignUpPage.module.css";
 import { useAuthStore } from "@/lib/store/authStore";
-import { UserAuth } from "@/types/user";
-import css from "./SignUpPage.module.css";
-import { AuthStore } from "@/lib/store/authStore";
+import { register } from "@/lib/api/clientApi";
+import { UserRequest } from "@/types/user";
 
-export default function SignUpPage() {
-  const router = useRouter();
-  const [error, setError] = useState("");
-  const setUser = useAuthStore((state: AuthStore) => state.setUser);
+const NewUserRegistrationForm = () => {
+  const navigationTool = useRouter();
+  const [apiError, setApiError] = useState("");
+  const updateUser = useAuthStore((state) => state.setUser);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
-
-    const formData = new FormData(event.currentTarget);
-
-    const formValues: UserAuth = {
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
+  const handleFormSubmit = async (submissionData: FormData) => {
+    const userData: UserRequest = {
+      email: submissionData.get("email") as string,
+      password: submissionData.get("password") as string,
     };
 
     try {
-      const user = await registerUser(formValues);
-      if (user) {
-        setUser(user);
-        router.push("/profile");
+      const apiResponse = await register(userData);
+      if (apiResponse) {
+        updateUser(apiResponse);
+        navigationTool.push("/profile");
       } else {
-        setError("Registration failed. Please try again.");
+        setApiError("Invalid email or password.");
       }
-    } catch (err) {
-      console.error("Registration error:", err);
-      setError("An error occurred during registration. Please try again.");
+    } catch (catchError) {
+      console.error("Registration error:", catchError);
+      setApiError("Something went wrong. Please try again.");
     }
   };
 
   return (
-    <main className={css.mainContent}>
-      <h1 className={css.formTitle}>Sign up</h1>
-      <form className={css.form} onSubmit={handleSubmit}>
-        <div className={css.formGroup}>
-          <label htmlFor="email">Email</label>
+    <main className={localStyles.mainContent}>
+      <form className={localStyles.form} action={handleFormSubmit}>
+        <h1 className={localStyles.formTitle}>User Registration</h1>
+        {apiError && <p className={localStyles.error}>{apiError}</p>}
+        <div className={localStyles.formGroup}>
+          <label htmlFor="email">Email address</label>
           <input
             id="email"
             type="email"
             name="email"
-            className={css.input}
+            className={localStyles.input}
             required
           />
         </div>
-        <div className={css.formGroup}>
+        <div className={localStyles.formGroup}>
           <label htmlFor="password">Password</label>
           <input
             id="password"
             type="password"
             name="password"
-            className={css.input}
+            className={localStyles.input}
             required
           />
         </div>
-        <div className={css.actions}>
-          <button type="submit" className={css.submitButton}>
+        <div className={localStyles.actions}>
+          <button type="submit" className={localStyles.submitButton}>
             Register
           </button>
         </div>
-        {error && <p className={css.error}>{error}</p>}
       </form>
     </main>
   );
-}
+};
+
+export default NewUserRegistrationForm;

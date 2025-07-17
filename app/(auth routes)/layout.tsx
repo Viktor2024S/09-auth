@@ -1,24 +1,28 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter, useState } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Loader } from "@/components/Loader/Loader";
+import { useAuthStore } from "@/lib/store/authStore";
 
-export default function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-
-  const clearIsAuth = useAuthStore((state) => state.clearIsAuthenticated);
-  useEffect(() => {
-    clearIsAuth();
-    router.refresh();
-    setLoading(false);
-  }, [clearIsAuth, router]);
-
-  return <>{loading ? <Loader /> : children}</>;
+interface AuthenticationLayoutProps {
+  nestedContent: React.ReactNode;
 }
 
-export default AuthLayout;
+const AuthenticationWrapper = ({
+  nestedContent,
+}: AuthenticationLayoutProps) => {
+  const navHandler = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const resetAuthStatus = useAuthStore((state) => state.clearIsAuthenticated);
+
+  useEffect(() => {
+    resetAuthStatus();
+    navHandler.refresh();
+    setIsLoading(false);
+  }, [resetAuthStatus, navHandler]);
+
+  return <>{isLoading ? <Loader /> : nestedContent}</>;
+};
+
+export default AuthenticationWrapper;
