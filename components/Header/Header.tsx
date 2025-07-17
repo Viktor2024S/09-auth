@@ -7,14 +7,10 @@ import { useAuthStore } from "@/lib/store/authStore";
 import css from "./Header.module.css";
 import { AuthStore } from "@/lib/store/authStore";
 
-// Винесіть функцію-селектор за межі компонента.
-// Це гарантує, що функція створюється лише один раз, а не при кожному рендері.
-const selectIsAuthenticated = (state: AuthStore) => ({
-  isAuthenticated: state.isAuthenticated,
-});
+const selectIsAuthenticated = (state: AuthStore) => state.isAuthenticated;
 
 export default function Header() {
-  const { isAuthenticated } = useAuthStore(selectIsAuthenticated);
+  const isAuthenticated = useAuthStore(selectIsAuthenticated);
 
   return (
     <header className={css.header}>
