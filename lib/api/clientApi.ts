@@ -1,82 +1,100 @@
 import type { Note, NewNote, NotesResponse } from "@/types/note";
-import { nextServer } from "./api";
-import { User } from "@/types/user";
-import { UserRequest, CheckSessionResponse } from "@/types/user";
+import { User, UserRequest, CheckSessionResponse } from "@/types/user";
 import { AxiosError } from "axios";
+import { nextServer } from "./api";
 
-export const fetchNotes = async (
-  searchText: string,
-  page = 1,
-  perPage = 10,
-  tag?: string
+export const retrieveNotes = async (
+  searchQuery: string,
+  pageNumber = 1,
+  itemsPerPage = 10,
+  tagFilter?: string
 ): Promise<NotesResponse> => {
-  const { data } = await nextServer.get<NotesResponse>("/notes", {
+  const { data: responseData } = await nextServer.get<NotesResponse>("/notes", {
     params: {
-      ...(searchText !== "" && { search: searchText }),
-      page,
-      perPage,
-      ...(tag && tag !== "All" && { tag }),
+      ...(searchQuery !== "" && { search: searchQuery }),
+      page: pageNumber,
+      perPage: itemsPerPage,
+      ...(tagFilter && tagFilter !== "All" && { tag: tagFilter }),
     },
   });
 
-  return data;
+  return responseData;
 };
 
-export const createNote = async (noteData: NewNote): Promise<Note> => {
-  const { data } = await nextServer.post<Note>("/notes", noteData);
-  return data;
+export const addNewNote = async (newNoteDetails: NewNote): Promise<Note> => {
+  const { data: createdNoteData } = await nextServer.post<Note>(
+    "/notes",
+    newNoteDetails
+  );
+  return createdNoteData;
 };
 
-export const deleteNote = async (notesId: string): Promise<Note> => {
-  const { data } = await nextServer.delete<Note>(`/notes/${notesId}`);
-  return data;
+export const removeNote = async (noteIdentifier: string): Promise<Note> => {
+  const { data: deletedNoteData } = await nextServer.delete<Note>(
+    `/notes/${noteIdentifier}`
+  );
+  return deletedNoteData;
 };
 
-export const fetchNoteById = async (id: string): Promise<Note> => {
-  const { data } = await nextServer.get<Note>(`/notes/${id}`);
-  return data;
+export const getNoteDetailsById = async (
+  noteIdString: string
+): Promise<Note> => {
+  const { data: singleNoteData } = await nextServer.get<Note>(
+    `/notes/${noteIdString}`
+  );
+  return singleNoteData;
 };
 
-export const register = async (data: UserRequest): Promise<User> => {
-  const response = await nextServer.post<User>("/auth/register", data);
-  return response.data;
+export const userSignUp = async (
+  registrationPayload: UserRequest
+): Promise<User> => {
+  const apiRegistrationResponse = await nextServer.post<User>(
+    "/auth/register",
+    registrationPayload
+  );
+  return apiRegistrationResponse.data;
 };
 
-export const login = async (data: UserRequest): Promise<User> => {
-  const response = await nextServer.post<User>("/auth/login", data);
-  return response.data;
+export const userSignIn = async (loginPayload: UserRequest): Promise<User> => {
+  const apiLoginResponse = await nextServer.post<User>(
+    "/auth/login",
+    loginPayload
+  );
+  return apiLoginResponse.data;
 };
 
-export const logout = async (): Promise<void> => {
+export const userSignOut = async (): Promise<void> => {
   await nextServer.post("/auth/logout");
 };
 
-export const checkSession = async (): Promise<{
+export const verifySessionStatus = async (): Promise<{
   success: boolean;
   message: string;
 }> => {
   try {
-    const { data, status } =
+    const { data: sessionData, status: httpStatus } =
       await nextServer.get<CheckSessionResponse>("/auth/session");
-    return { success: status === 200, message: data.message };
-  } catch (error) {
-    const axiosError = error as AxiosError<{ message: string }>;
-    if (
-      axiosError.response?.status === 400 ||
-      axiosError.response?.status === 401
-    ) {
-      return { success: false, message: axiosError.response.data.message };
+    return { success: httpStatus === 200, message: sessionData.message };
+  } catch (requestError) {
+    const axError = requestError as AxiosError<{ message: string }>;
+    if (axError.response?.status === 400 || axError.response?.status === 401) {
+      return { success: false, message: axError.response.data.message };
     }
-    throw error;
+    throw requestError;
   }
 };
 
-export const getMe = async (): Promise<User> => {
-  const { data } = await nextServer.get<User>("/users/me");
-  return data;
+export const retrieveCurrentUser = async (): Promise<User> => {
+  const { data: currentUserData } = await nextServer.get<User>("/users/me");
+  return currentUserData;
 };
 
-export const updateUser = async (data: { username: string }): Promise<User> => {
-  const response = await nextServer.patch<User>("/users/me", data);
-  return response.data;
+export const modifyUserProfile = async (updatePayload: {
+  username: string;
+}): Promise<User> => {
+  const userUpdateResponse = await nextServer.patch<User>(
+    "/users/me",
+    updatePayload
+  );
+  return userUpdateResponse.data;
 };
