@@ -1,11 +1,18 @@
-import css from "./ErrorMessage.module.css";
+"use client";
 
-interface ErrorMessageProps {
-  message?: string;
+import { useEffect } from "react";
+import { toast } from "react-hot-toast";
+
+interface NotificationMessageProps {
+  displayMessage: string;
 }
 
-export default function ErrorMessage({
-  message = "Whoops, something went wrong! Please try reloading this page!",
-}: ErrorMessageProps) {
-  return <p className={css.error}>{message}</p>;
-}
+export const ToastNotificationDisplay = ({
+  displayMessage,
+}: NotificationMessageProps) => {
+  useEffect(() => {
+    toast.error(displayMessage);
+  }, [displayMessage]);
+
+  return null;
+};
