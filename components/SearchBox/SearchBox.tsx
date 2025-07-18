@@ -1,14 +1,14 @@
 import searchStyles from "./SearchBox.module.css";
 
-interface SearchInputProps {
+interface SearchBoxProps {
   currentValue: string;
   onTextChange: (searchText: string) => void;
 }
 
-export const NotesSearchInput = ({
+export default function SearchBox({
   currentValue,
   onTextChange,
-}: SearchInputProps) => {
+}: SearchBoxProps) {
   return (
     <input
       className={searchStyles.input}
@@ -18,4 +18,4 @@ export const NotesSearchInput = ({
       value={currentValue}
     />
   );
-};
+}

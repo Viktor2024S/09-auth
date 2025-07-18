@@ -3,16 +3,14 @@
 import { useEffect } from "react";
 import { toast } from "react-hot-toast";
 
-interface NotificationMessageProps {
+interface ErrorMessageProps {
   displayMessage: string;
 }
 
-export const ToastNotificationDisplay = ({
-  displayMessage,
-}: NotificationMessageProps) => {
+export default function ErrorMessage({ displayMessage }: ErrorMessageProps) {
   useEffect(() => {
     toast.error(displayMessage);
   }, [displayMessage]);
 
   return null;
-};
+}
