@@ -1,36 +1,50 @@
-import { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
-import Image from "next/image";
-import { serverFetchCurrentUser } from "@/lib/api/serverApi";
+// import Image from "next/image";
 import css from "./ProfilePage.module.css";
-import { redirect } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useAuthStore } from "@/lib/store/authStore";
+import { useRouter } from "next/navigation";
+import { fetchCurrentUser } from "@/lib/api/clientApi";
+export default function ProfilePage() {
+  const { user: authUser, setUser, clearIsAuthenticated } = useAuthStore();
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState(authUser);
+  const [loading, setLoading] = useState(true);
 
-export async function generateMetadata(): Promise<Metadata> {
-  try {
-    const user = await serverFetchCurrentUser();
-    return {
-      title: `${user.username}'s Profile`,
-      description: `Profile page for user ${user.username}.`,
+  useEffect(() => {
+    const getUserProfile = async () => {
+      if (!authUser) {
+        try {
+          const fetchedUser = await fetchCurrentUser();
+          setUser(fetchedUser);
+          setCurrentUser(fetchedUser);
+        } catch (error) {
+          console.error(
+            "Failed to fetch current user, redirecting to sign-in:",
+            error
+          );
+          clearIsAuthenticated();
+          router.push("/sign-in");
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
     };
-  } catch (error) {
-    console.error("Failed to generate metadata for profile page:", error);
-    return {
-      title: "Profile",
-      description: "User profile page.",
-    };
+
+    getUserProfile();
+  }, [authUser, setUser, clearIsAuthenticated, router]);
+
+  if (loading) {
+    return <div>Loading profile...</div>;
   }
-}
 
-export default async function ProfilePage() {
-  let user;
-  try {
-    user = await serverFetchCurrentUser();
-  } catch (error) {
-    console.error(
-      "Failed to fetch current user, redirecting to sign-in:",
-      error
-    );
-    redirect("/sign-in");
+  if (!currentUser) {
+    router.push("/sign-in");
+    return null;
   }
 
   return (
@@ -42,18 +56,18 @@ export default async function ProfilePage() {
             Edit Profile
           </Link>
         </div>
-        <div className={css.avatarWrapper}>
+        {/* <div className={css.avatarWrapper}>
           <Image
-            src={user?.avatar || "/default-avatar.png"}
+            src={currentUser?.avatar || "/default-avatar.png"}
             alt="User Avatar"
             width={120}
             height={120}
             className={css.avatar}
           />
-        </div>
+        </div> */}
         <div className={css.profileInfo}>
-          <p>Username: {user?.username}</p>
-          <p>Email: {user?.email}</p>
+          <p>Username: {currentUser?.username}</p>
+          <p>Email: {currentUser?.email}</p>
         </div>
       </div>
     </main>

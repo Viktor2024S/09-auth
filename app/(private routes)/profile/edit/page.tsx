@@ -6,7 +6,7 @@ import Image from "next/image";
 import { fetchCurrentUser, updateUser } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import { User } from "@/types/user";
-import css from "./page.module.css";
+import css from "./EditProfilePage.module.css";
 import { AxiosError } from "axios";
 
 export default function EditProfilePage() {
