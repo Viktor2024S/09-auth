@@ -4,13 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { clientFetchNoteById } from "@/lib/api/clientApi";
 import Loader from "@/components/Loader/Loader";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
-import css from "./NotePreview.module.css";
 
-interface NotePreviewClientProps {
+interface NotePreviewProps {
   noteId: string;
 }
 
-export default function NotePreviewClient({ noteId }: NotePreviewClientProps) {
+export default function NotePreview({ noteId }: NotePreviewProps) {
   const {
     data: note,
     isLoading,
@@ -19,24 +18,17 @@ export default function NotePreviewClient({ noteId }: NotePreviewClientProps) {
   } = useQuery({
     queryKey: ["note", noteId],
     queryFn: () => clientFetchNoteById(noteId),
-    enabled: !!noteId,
   });
 
   if (isLoading) return <Loader />;
-  if (isError) return <ErrorMessage message={error.message} />;
-  if (!note) return <ErrorMessage message="Note preview not available." />;
+  if (isError) return <ErrorMessage displayMessage={error.message} />;
+  if (!note)
+    return <ErrorMessage displayMessage="Note preview not available." />;
 
   return (
-    <div className={css.modalOverlay}>
-      <div className={css.modalContent}>
-        <h2 className={css.title}>{note.title}</h2>
-        <p className={css.tag}>{note.tag}</p>
-        <div className={css.content}>
-          <p>{note.content.substring(0, 200)}...</p>{" "}
-        </div>
-
-        {/* <button onClick={() => window.history.back()}>Close</button> */}
-      </div>
+    <div>
+      <h2>{note.title}</h2>
+      <p>{note.content}</p>
     </div>
   );
 }

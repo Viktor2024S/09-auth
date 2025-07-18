@@ -1,84 +1,112 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { useDebounce } from "use-debounce";
-import { Toaster } from "react-hot-toast";
-import Link from "next/link";
+
+import { useQuery } from "@tanstack/react-query";
 import { clientFetchNotes } from "@/lib/api/clientApi";
-import { Note } from "@/types/note";
-import NoteList from "@/components/NoteList/NoteList";
-import SearchBox from "@/components/SearchBox/SearchBox";
-import Pagination from "@/components/Pagination/Pagination";
 import Loader from "@/components/Loader/Loader";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
-import css from "./Notes.module.css";
+import { Tag, PaginatedNotesResponse, Note } from "@/types/note";
+import { useEffect, useState } from "react";
+import { useDebounce } from "use-debounce";
 
 interface NotesClientProps {
-  initialData: { notes: Note[]; totalPages: number };
-  currentTag: string;
+  initialPage: number;
+  initialTag: Tag | "All";
+  initialSearchQuery: string;
+  initialData: PaginatedNotesResponse;
 }
 
 export default function NotesClient({
+  initialPage,
+  initialTag,
+  initialSearchQuery,
   initialData,
-  currentTag,
 }: NotesClientProps) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [currentTag, setCurrentTag] = useState<Tag | "All">(initialTag);
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [currentTag, debouncedSearchQuery]);
+    setCurrentPage(initialPage);
+    setCurrentTag(initialTag);
+    setSearchQuery(initialSearchQuery);
+  }, [initialPage, initialTag, initialSearchQuery]);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["notes", currentPage, debouncedSearchQuery, currentTag],
-    queryFn: () =>
+    queryFn: async () =>
       clientFetchNotes(currentPage, debouncedSearchQuery, currentTag),
-    placeholderData: keepPreviousData,
     initialData: initialData,
+    placeholderData: (previousData) => previousData,
   });
 
-  const handlePageChange = ({ selected }: { selected: number }) =>
-    setCurrentPage(selected + 1);
-  const handleSearchChange = (query: string) => setSearchQuery(query);
-
-  const notes = data?.notes ?? [];
-  const totalPages = data?.totalPages ?? 0;
-
-  if (isLoading && !data) return <Loader />;
+  if (isLoading) return <Loader />;
   if (isError)
     return (
-      <ErrorMessage message={error?.message || "Failed to fetch notes."} />
+      <ErrorMessage displayMessage={error?.message || "An error occurred."} />
     );
 
+  const notes: Note[] = data?.notes || [];
+  const totalPages = data?.totalPages || 1;
+
   return (
-    <div className={css.container}>
-      <Toaster position="top-right" reverseOrder={false} />
-
-      <header className={css.toolbar}>
-        <SearchBox value={searchQuery} onChange={handleSearchChange} />
-        <Link href="/notes/action/create" className={css.button}>
-          Create note +
-        </Link>
-      </header>
-
-      {isLoading ? (
-        <Loader />
-      ) : notes.length > 0 ? (
-        <NoteList notes={notes} />
-      ) : (
-        <p>No notes found.</p>
-      )}
-
-      {totalPages > 1 && !isLoading && (
-        <div className={css.paginationContainer}>
-          <Pagination
-            pageCount={totalPages}
-            onPageChange={handlePageChange}
-            currentPage={currentPage}
-          />
+    <div>
+      <div>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search notes..."
+        />
+        <div>
+          {(
+            ["All", "Todo", "Work", "Personal", "Meeting", "Shopping"] as (
+              | Tag
+              | "All"
+            )[]
+          ).map((tagOption) => (
+            <button
+              key={tagOption}
+              onClick={() => setCurrentTag(tagOption)}
+              style={{
+                fontWeight: currentTag === tagOption ? "bold" : "normal",
+              }}
+            >
+              {tagOption}
+            </button>
+          ))}
         </div>
+      </div>
+      {notes.length === 0 && !isLoading && !isError ? (
+        <p>No notes found.</p>
+      ) : (
+        <ul>
+          {notes.map((note: Note) => (
+            <li key={note._id}>
+              <h3>{note.title}</h3>
+              <p>{note.content}</p>
+              <p>Tag: {note.tag}</p>
+            </li>
+          ))}
+        </ul>
       )}
+      <div>
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() => setCurrentPage((prev) => prev + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,103 +1,73 @@
 "use client";
 
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+// import * as z from "zod"; // <-- REMOVE THIS LINE
 import toast from "react-hot-toast";
-import { NoteData } from "@/types/note";
-import { createNoteAction } from "@/lib/tags";
+import type { NoteData } from "@/types/note";
+import { noteSchema } from "@/types/note";
+import { createNoteAction } from "@/app/actions";
 import css from "./NoteForm.module.css";
 
-interface NoteFormProps {
-  initialData?: NoteData;
-  isEdit?: boolean;
-}
-
-export default function NoteForm({
-  initialData = { title: "", content: "", tag: "Todo" },
-  isEdit = false,
-}: NoteFormProps) {
-  const [formData, setFormData] = useState<NoteData>(initialData);
-  const router = useRouter();
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: createNoteAction,
-    onMutate: () => {
-      toast.loading("Creating note...");
-    },
-    onSuccess: (result) => {
-      toast.dismiss();
-      if (result?.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("Note created successfully! Redirecting...");
-        queryClient.invalidateQueries({ queryKey: ["notes"] });
-        router.push("/notes");
-      }
-    },
-    onError: (error) => {
-      toast.dismiss();
-      toast.error(`Failed to create note: ${error.message}`);
-    },
+export const NoteForm = () => {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<NoteData>({
+    resolver: zodResolver(noteSchema),
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    mutation.mutate(formData);
+  const onSubmit = async (data: NoteData) => {
+    try {
+      await createNoteAction(data);
+      toast.success("Note created successfully!");
+      reset();
+    } catch (error) {
+      toast.error("Failed to create note.");
+      console.error("Note creation error:", error);
+    }
   };
 
   return (
-    <form className={css.form} onSubmit={handleSubmit}>
-      <label className={css.label}>
-        Title:
-        <input
-          type="text"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          required
-          className={css.input}
-        />
-      </label>
-      <label className={css.label}>
-        Content:
+    <form onSubmit={handleSubmit(onSubmit)} className={css.form}>
+      <div>
+        <label htmlFor="title">Title</label>
+        <input id="title" {...register("title")} className={css.input} />
+        {errors.title && <p className={css.error}>{errors.title.message}</p>}
+      </div>
+      <div>
+        <label htmlFor="content">Content</label>
         <textarea
-          name="content"
-          value={formData.content}
-          onChange={handleChange}
-          required
+          id="content"
+          {...register("content")}
           className={css.textarea}
         />
-      </label>
-      <label className={css.label}>
-        Tag:
-        <input
-          type="text"
-          name="tag"
-          value={formData.tag}
-          onChange={handleChange}
-          className={css.input}
-        />
-      </label>
-      <button
-        type="submit"
-        disabled={mutation.isPending}
-        className={css.button}
-      >
-        {mutation.isPending
-          ? "Saving..."
-          : isEdit
-            ? "Update Note"
-            : "Create Note"}
+        {errors.content && (
+          <p className={css.error}>{errors.content.message}</p>
+        )}
+      </div>
+      <div>
+        <label htmlFor="tag">Tag</label>
+        <select id="tag" {...register("tag")} className={css.select}>
+          <option value="">Select a tag</option>
+          <option value="Todo">Todo</option>
+          <option value="Work">Work</option>
+          <option value="Personal">Personal</option>
+          <option value="Meeting">Meeting</option>
+          <option value="Shopping">Shopping</option>
+          <option value="Ideas">Ideas</option>
+          <option value="Travel">Travel</option>
+          <option value="Finance">Finance</option>
+          <option value="Health">Health</option>
+          <option value="Important">Important</option>
+        </select>
+        {errors.tag && <p className={css.error}>{errors.tag.message}</p>}
+      </div>
+      <button type="submit" className={css.button}>
+        Create Note
       </button>
     </form>
   );
-}
+};

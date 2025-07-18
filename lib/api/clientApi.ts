@@ -1,6 +1,6 @@
 import instance from "./api";
 import { User, UserAuth, UserUpdate } from "@/types/user";
-import { Note } from "@/types/note";
+import { Note, PaginatedNotesResponse, Tag } from "@/types/note";
 
 export const registerUser = async (credentials: UserAuth): Promise<User> => {
   const { data } = await instance.post<User>("/auth/register", credentials);
@@ -31,8 +31,22 @@ export const updateUser = async (updatedFields: UserUpdate): Promise<User> => {
   return data;
 };
 
-export const clientFetchNotes = async (): Promise<Note[]> => {
-  const { data } = await instance.get<Note[]>("/notes");
+export const clientFetchNotes = async (
+  page: number = 1,
+  query: string = "",
+  tag: Tag | "All" = "All"
+): Promise<PaginatedNotesResponse> => {
+  const params = new URLSearchParams();
+  params.append("page", page.toString());
+  if (query) {
+    params.append("query", query);
+  }
+  if (tag !== "All") {
+    params.append("tag", tag);
+  }
+  const { data } = await instance.get<PaginatedNotesResponse>(
+    `/notes?${params.toString()}`
+  );
   return data;
 };
 

@@ -1,7 +1,7 @@
 import { Metadata } from "next";
-import { fetchNotes } from "@/lib/api/serverApi";
+import { serverFetchNotes } from "@/lib/api/serverApi"; // Переконайтеся, що fetchNotes тепер serverFetchNotes
 import NotesClient from "./Notes.client";
-import { Tag } from "@/types/note";
+import { Tag, isTagOrAll } from "@/types/note"; // Імпортуємо isTagOrAll
 
 export async function generateMetadata({
   params,
@@ -9,11 +9,11 @@ export async function generateMetadata({
   params: Promise<{ slug?: string[] }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const tag = slug?.[0] || "All";
+  const tag: Tag | "All" = slug?.[0] && isTagOrAll(slug[0]) ? slug[0] : "All";
   const pageTitle = tag === "All" ? "All Notes" : `Notes with tag: ${tag}`;
   const pageDescription = `Browse and manage your notes. Current filter: ${tag}.`;
 
-  const baseUrl = "https://09-auth-pi.vercel.app"; // !!!  URL VERCEL
+  const baseUrl = "https://09-auth-pi.vercel.app";
   const currentUrl = `${baseUrl}/notes/filter/${tag}`;
 
   return {
@@ -43,9 +43,22 @@ export default async function NotesFilterPage({
   params: Promise<{ slug?: string[] }>;
 }) {
   const { slug } = await params;
-  const tag = (slug?.[0] as Tag | "All") || "All";
+  const tag: Tag | "All" = slug?.[0] && isTagOrAll(slug[0]) ? slug[0] : "All";
+  const currentPage = 1;
+  const initialSearchQuery = "";
 
-  const initialData = await fetchNotes(1, "", tag);
+  const initialData = await serverFetchNotes(
+    currentPage,
+    initialSearchQuery,
+    tag
+  );
 
-  return <NotesClient initialData={initialData} currentTag={tag} />;
+  return (
+    <NotesClient
+      initialPage={currentPage}
+      initialTag={tag}
+      initialSearchQuery={initialSearchQuery}
+      initialData={initialData}
+    />
+  );
 }
