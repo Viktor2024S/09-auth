@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader } from "@/components/Loader/Loader";
+import Loader from "@/components/Loader/Loader";
 import { useAuthStore } from "@/lib/store/authStore";
 
 interface AuthenticationLayoutProps {

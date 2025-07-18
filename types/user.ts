@@ -15,3 +15,9 @@ export interface UserUpdate {
   email?: string;
   avatar?: string | null;
 }
+
+export type UserRequest = UserAuth;
+
+export interface CheckSessionResponse {
+  message: string;
+}

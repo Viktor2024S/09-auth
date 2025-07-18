@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
-import { verifyUserSession, fetchCurrentUserData } from "@/lib/api/clientApi";
+import { verifySessionStatus, retrieveCurrentUser } from "@/lib/api/clientApi";
 
 type AuthContextProviderProps = {
   wrappedContent: React.ReactNode;
@@ -17,9 +17,9 @@ const ApplicationAuthenticator = ({
   useEffect(() => {
     const performSessionCheck = async () => {
       try {
-        const sessionVerificationResult = await verifyUserSession();
+        const sessionVerificationResult = await verifySessionStatus();
         if (sessionVerificationResult.success) {
-          const authenticatedUserData = await fetchCurrentUserData();
+          const authenticatedUserData = await retrieveCurrentUser();
           if (authenticatedUserData) setAuthUser(authenticatedUserData);
         } else {
           resetAuthStatus();

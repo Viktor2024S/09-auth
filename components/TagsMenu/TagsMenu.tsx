@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import noteTagsData from "@/lib/tags";
+import noteTagsData, { Tag } from "@/lib/tags";
 import menuStyles from "./TagsMenu.module.css";
 
 export const NoteTagsDropdownMenu = () => {
@@ -49,7 +49,7 @@ export const NoteTagsDropdownMenu = () => {
               All
             </Link>
           </li>
-          {noteTagsData.map((currentTag) => (
+          {noteTagsData.map((currentTag: Tag) => (
             <li
               className={menuStyles.menuItem}
               key={currentTag}

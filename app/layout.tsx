@@ -48,14 +48,21 @@ export default function ApplicationRootLayout({
     <html lang="en">
       <body className={`${mainAppFont.variable}`}>
         <QueryClientWrapper>
-          <ApplicationAuthenticator>
-            <AppNavigationBar />
-            <main>
-              {children}
-              {modal}
-            </main>
-            <Footer />
-          </ApplicationAuthenticator>
+          <ApplicationAuthenticator
+            wrappedContent={
+              <>
+                <AppNavigationBar
+                  wrappedContent={
+                    <main>
+                      {children}
+                      {modal}
+                    </main>
+                  }
+                />
+                <Footer />
+              </>
+            }
+          />
         </QueryClientWrapper>
       </body>
     </html>

@@ -1,7 +1,7 @@
 import type { Note, NewNote, NotesResponse } from "@/types/note";
 import { User, UserRequest, CheckSessionResponse } from "@/types/user";
 import { AxiosError } from "axios";
-import { nextServer } from "./api";
+import { nextApi } from "./api";
 
 export const retrieveNotes = async (
   searchQuery: string,
@@ -9,7 +9,7 @@ export const retrieveNotes = async (
   itemsPerPage = 10,
   tagFilter?: string
 ): Promise<NotesResponse> => {
-  const { data: responseData } = await nextServer.get<NotesResponse>("/notes", {
+  const { data: responseData } = await nextApi.get<NotesResponse>("/notes", {
     params: {
       ...(searchQuery !== "" && { search: searchQuery }),
       page: pageNumber,
@@ -22,7 +22,7 @@ export const retrieveNotes = async (
 };
 
 export const addNewNote = async (newNoteDetails: NewNote): Promise<Note> => {
-  const { data: createdNoteData } = await nextServer.post<Note>(
+  const { data: createdNoteData } = await nextApi.post<Note>(
     "/notes",
     newNoteDetails
   );
@@ -30,7 +30,7 @@ export const addNewNote = async (newNoteDetails: NewNote): Promise<Note> => {
 };
 
 export const removeNote = async (noteIdentifier: string): Promise<Note> => {
-  const { data: deletedNoteData } = await nextServer.delete<Note>(
+  const { data: deletedNoteData } = await nextApi.delete<Note>(
     `/notes/${noteIdentifier}`
   );
   return deletedNoteData;
@@ -39,7 +39,7 @@ export const removeNote = async (noteIdentifier: string): Promise<Note> => {
 export const getNoteDetailsById = async (
   noteIdString: string
 ): Promise<Note> => {
-  const { data: singleNoteData } = await nextServer.get<Note>(
+  const { data: singleNoteData } = await nextApi.get<Note>(
     `/notes/${noteIdString}`
   );
   return singleNoteData;
@@ -48,7 +48,7 @@ export const getNoteDetailsById = async (
 export const userSignUp = async (
   registrationPayload: UserRequest
 ): Promise<User> => {
-  const apiRegistrationResponse = await nextServer.post<User>(
+  const apiRegistrationResponse = await nextApi.post<User>(
     "/auth/register",
     registrationPayload
   );
@@ -56,7 +56,7 @@ export const userSignUp = async (
 };
 
 export const userSignIn = async (loginPayload: UserRequest): Promise<User> => {
-  const apiLoginResponse = await nextServer.post<User>(
+  const apiLoginResponse = await nextApi.post<User>(
     "/auth/login",
     loginPayload
   );
@@ -64,7 +64,7 @@ export const userSignIn = async (loginPayload: UserRequest): Promise<User> => {
 };
 
 export const userSignOut = async (): Promise<void> => {
-  await nextServer.post("/auth/logout");
+  await nextApi.post("/auth/logout");
 };
 
 export const verifySessionStatus = async (): Promise<{
@@ -73,7 +73,7 @@ export const verifySessionStatus = async (): Promise<{
 }> => {
   try {
     const { data: sessionData, status: httpStatus } =
-      await nextServer.get<CheckSessionResponse>("/auth/session");
+      await nextApi.get<CheckSessionResponse>("/auth/session");
     return { success: httpStatus === 200, message: sessionData.message };
   } catch (requestError) {
     const axError = requestError as AxiosError<{ message: string }>;
@@ -85,14 +85,14 @@ export const verifySessionStatus = async (): Promise<{
 };
 
 export const retrieveCurrentUser = async (): Promise<User> => {
-  const { data: currentUserData } = await nextServer.get<User>("/users/me");
+  const { data: currentUserData } = await nextApi.get<User>("/users/me");
   return currentUserData;
 };
 
 export const modifyUserProfile = async (updatePayload: {
   username: string;
 }): Promise<User> => {
-  const userUpdateResponse = await nextServer.patch<User>(
+  const userUpdateResponse = await nextApi.patch<User>(
     "/users/me",
     updatePayload
   );

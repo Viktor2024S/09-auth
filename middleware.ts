@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { serverCheckSession } from "./lib/api/serverApi";
+import { validateServerSession } from "./lib/api/serverApi";
 import { parse } from "cookie";
 
 const privateRoutes = ["/profile", "/notes"];
@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
 
   if (!accessToken) {
     if (refreshToken) {
-      const data = await serverCheckSession();
+      const data = await validateServerSession();
       const setCookie = data.headers["set-cookie"];
 
       if (setCookie) {

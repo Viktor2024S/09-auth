@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { fetchCurrentUserServer } from "@/lib/api/serverApi";
+import { fetchAuthenticatedUser } from "@/lib/api/serverApi";
 import profileStyles from "./ProfilePage.module.css";
 
 export async function generateProfilePageMetadata(): Promise<Metadata> {
-  const currentUserData = await fetchCurrentUserServer();
+  const currentUserData = await fetchAuthenticatedUser();
 
   return {
     title: `NoteHub — Profile: ${currentUserData.username}`,
@@ -39,7 +39,7 @@ export async function generateProfilePageMetadata(): Promise<Metadata> {
 }
 
 const UserProfileDisplayPage = async () => {
-  const currentUserInfo = await fetchCurrentUserServer();
+  const currentUserInfo = await fetchAuthenticatedUser();
   return (
     <main className={profileStyles.mainContent}>
       <div className={profileStyles.profileCard}>
@@ -77,4 +77,4 @@ const UserProfileDisplayPage = async () => {
   );
 };
 
-export default UserProfileDisplayPage; // Експортовано перейменований компонент
+export default UserProfileDisplayPage;

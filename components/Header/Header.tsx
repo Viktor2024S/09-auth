@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { checkSession, getMe } from "@/lib/api/clientApi";
+import { verifySessionStatus, retrieveCurrentUser } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 
 type ChildrenProp = {
@@ -17,9 +17,9 @@ const ApplicationAuthenticator = ({ wrappedContent }: ChildrenProp) => {
   useEffect(() => {
     const initializeUserSession = async () => {
       try {
-        const sessionVerificationResult = await checkSession();
+        const sessionVerificationResult = await verifySessionStatus();
         if (sessionVerificationResult.success) {
-          const loggedInUser = await getMe();
+          const loggedInUser = await retrieveCurrentUser();
           if (loggedInUser) setUserDataInStore(loggedInUser);
         } else {
           resetAuthStatusInStore();

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import navStyles from "./AuthNavigation.module.css";
 import { useAuthStore } from "@/lib/store/authStore";
-import { logout } from "@/lib/api/clientApi";
+import { userSignOut } from "@/lib/api/clientApi";
 import Link from "next/link";
 
 const UserAuthStatusDisplay = () => {
@@ -15,7 +15,7 @@ const UserAuthStatusDisplay = () => {
   const isUserAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const performLogoutAction = async () => {
-    await logout();
+    await userSignOut();
     resetAuthenticationState();
     appNavigator.push("/sign-in");
   };

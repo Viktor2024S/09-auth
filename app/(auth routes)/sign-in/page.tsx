@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import componentStyles from "./SignInPage.module.css";
 import { useAuthStore } from "@/lib/store/authStore";
 import { UserRequest } from "@/types/user";
-import { login } from "@/lib/api/clientApi";
+import { userSignIn } from "@/lib/api/clientApi";
 
 const UserLoginPage = () => {
   const pageNavigator = useRouter();
@@ -19,7 +19,7 @@ const UserLoginPage = () => {
     };
 
     try {
-      const loginResponse = await login(credentials);
+      const loginResponse = await userSignIn(credentials);
       if (loginResponse) {
         updateAuthUser(loginResponse);
         pageNavigator.push("/profile");

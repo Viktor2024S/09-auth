@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuthStore } from "@/lib/store/authStore";
-import { updateCurrentUser } from "@/lib/api/clientApi";
+import { modifyUserProfile } from "@/lib/api/clientApi";
 import pageStyles from "./EditProfilePage.module.css";
 
 const UserProfileEditForm = () => {
@@ -15,7 +15,7 @@ const UserProfileEditForm = () => {
     const newUsernameValue = submissionData.get("username") as string;
 
     try {
-      const updatedUserInfo = await updateCurrentUser({
+      const updatedUserInfo = await modifyUserProfile({
         username: newUsernameValue,
       });
       setUserData(updatedUserInfo);
