@@ -1,121 +1,78 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuthStore } from "@/lib/store/authStore";
-import { updateUser, uploadImage } from "@/lib/api/clientApi";
-import { UserUpdate } from "@/types/user";
-import toast from "react-hot-toast";
-import { AxiosError } from "axios";
+import { updateCurrentUser } from "@/lib/api/clientApi";
+import pageStyles from "./EditProfilePage.module.css";
 
-export default function EditProfilePage() {
-  const router = useRouter();
-  const [error, setError] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+const UserProfileEditForm = () => {
+  const navigationRouter = useRouter();
+  const currentUserData = useAuthStore((state) => state.user);
+  const setUserData = useAuthStore((state) => state.setUser);
 
-  const { user, setUser } = useAuthStore((state) => ({
-    user: state.user,
-    setUser: state.setUser,
-  }));
-
-  if (!user) {
-    return <div>Loading user data...</div>;
-  }
-
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setImageFile(event.target.files[0]);
-    }
-  };
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
-
-    const formData = new FormData(event.currentTarget);
-
-    const formValues: UserUpdate = {
-      username: formData.get("username") as string,
-      email: formData.get("email") as string,
-    };
+  const handleProfileUpdateSubmission = async (submissionData: FormData) => {
+    const newUsernameValue = submissionData.get("username") as string;
 
     try {
-      let currentAvatarUrl = user.avatar;
-
-      if (imageFile) {
-        const uploadResponse = await uploadImage(imageFile);
-        currentAvatarUrl = uploadResponse.photoUrl;
-      }
-
-      const updatedUser = await updateUser({
-        ...formValues,
-        avatar: currentAvatarUrl,
+      const updatedUserInfo = await updateCurrentUser({
+        username: newUsernameValue,
       });
-
-      if (updatedUser) {
-        setUser(updatedUser);
-        toast.success("Profile updated successfully!");
-        router.push("/profile");
-      } else {
-        setError("Failed to update profile.");
-        toast.error("Profile update failed.");
-      }
-    } catch (err) {
-      const axiosError = err as AxiosError<{ message: string }>;
-      console.error("Profile update error:", axiosError);
-      setError(
-        axiosError.response?.data?.message || "Failed to update profile."
-      );
-      toast.error(
-        axiosError.response?.data?.message || "Profile update failed."
-      );
+      setUserData(updatedUserInfo);
+      navigationRouter.push("/profile");
+    } catch (updateError) {
+      console.error("Failed to update profile:", updateError);
     }
   };
 
   return (
-    <main>
-      <h1>Edit Profile</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="username">Username</label>
-          <input
-            id="username"
-            type="text"
-            name="username"
-            defaultValue={user.username || ""}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            defaultValue={user.email || ""}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="image">Profile Image</label>
-          <input
-            id="image"
-            type="file"
-            name="image"
-            accept="image/*"
-            onChange={handleImageChange}
-          />
+    <main className={pageStyles.mainContent}>
+      <div className={pageStyles.profileCard}>
+        <h1 className={pageStyles.formTitle}>Edit Profile</h1>
 
-          {user.avatar && (
-            <Image src={user.avatar} alt="Profile" width={100} height={100} />
-          )}
-        </div>
-        <div>
-          <button type="submit">Save Changes</button>
-        </div>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </form>
+        <Image
+          src={
+            currentUserData?.avatar ||
+            "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"
+          }
+          alt="User Avatar"
+          width={120}
+          height={120}
+          className={pageStyles.avatar}
+          priority
+        />
+        <form
+          action={handleProfileUpdateSubmission}
+          className={pageStyles.profileInfo}
+        >
+          <div className={pageStyles.usernameWrapper}>
+            <label htmlFor="username">Username:</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              className={pageStyles.input}
+              defaultValue={currentUserData?.username || ""}
+              required
+            />
+          </div>
+          <p>Email: {currentUserData?.email || "user_email@example.com"}</p>
+          <div className={pageStyles.actions}>
+            <button type="submit" className={pageStyles.saveButton}>
+              Save
+            </button>
+            <button
+              type="button"
+              className={pageStyles.cancelButton}
+              onClick={() => navigationRouter.push("/profile")}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </main>
   );
-}
+};
+
+export default UserProfileEditForm;
