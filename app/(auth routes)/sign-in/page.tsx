@@ -2,74 +2,67 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import componentStyles from "./SignInPage.module.css";
 import { useAuthStore } from "@/lib/store/authStore";
-import { UserRequest } from "@/types/user";
-import { userSignIn } from "@/lib/api/clientApi";
+import { loginUser } from "@/lib/api/clientApi";
+import css from "./page.module.css";
+import { AxiosError } from "axios";
 
-const UserLoginPage = () => {
-  const pageNavigator = useRouter();
-  const [displayError, setLoginError] = useState("");
-  const updateAuthUser = useAuthStore((state) => state.setUser);
+export default function SignInPage() {
+  const router = useRouter();
+  const { setUser } = useAuthStore();
+  const [error, setError] = useState("");
 
-  const handleLoginAttempt = async (inputFormData: FormData) => {
-    const credentials: UserRequest = {
-      email: inputFormData.get("email") as string,
-      password: inputFormData.get("password") as string,
-    };
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
     try {
-      const loginResponse = await userSignIn(credentials);
-      if (loginResponse) {
-        updateAuthUser(loginResponse);
-        pageNavigator.push("/profile");
-      } else {
-        setLoginError("Invalid email or password");
-      }
-    } catch (catchException) {
-      console.error("Login error:", catchException);
-      setLoginError("Something went wrong. Please try again.");
+      const user = await loginUser({ email, password });
+      setUser(user);
+      router.push("/profile");
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      const errorMessage =
+        axiosError.response?.data?.message || "Login failed. Please try again.";
+      setError(errorMessage);
     }
   };
 
   return (
-    <main className={componentStyles.mainContent}>
-      <form className={componentStyles.form} action={handleLoginAttempt}>
-        <h1 className={componentStyles.formTitle}>User Login</h1>
-        {displayError && (
-          <p className={componentStyles.error}>{displayError}</p>
-        )}
-
-        <div className={componentStyles.formGroup}>
+    <main className={css.mainContent}>
+      <form className={css.form} onSubmit={handleSubmit} noValidate>
+        <h1 className={css.formTitle}>Sign in</h1>
+        <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
           <input
             id="email"
             type="email"
             name="email"
-            className={componentStyles.input}
+            className={css.input}
             required
           />
         </div>
-
-        <div className={componentStyles.formGroup}>
+        <div className={css.formGroup}>
           <label htmlFor="password">Password</label>
           <input
             id="password"
             type="password"
             name="password"
-            className={componentStyles.input}
+            className={css.input}
             required
           />
         </div>
-
-        <div className={componentStyles.actions}>
-          <button type="submit" className={componentStyles.submitButton}>
-            Sign In
+        <div className={css.actions}>
+          <button type="submit" className={css.submitButton}>
+            Log in
           </button>
         </div>
+        {error && <p className={css.error}>{error}</p>}
       </form>
     </main>
   );
-};
-
-export default UserLoginPage;
+}

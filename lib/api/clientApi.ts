@@ -1,100 +1,31 @@
-import type { Note, NewNote, NotesResponse } from "@/types/note";
-import { User, UserRequest, CheckSessionResponse } from "@/types/user";
-import { AxiosError } from "axios";
-import { nextApi } from "./api";
+import instance from "./api";
+import { User, UserAuth, UserUpdate } from "@/types/user";
 
-export const retrieveNotes = async (
-  searchQuery: string,
-  pageNumber = 1,
-  itemsPerPage = 10,
-  tagFilter?: string
-): Promise<NotesResponse> => {
-  const { data: responseData } = await nextApi.get<NotesResponse>("/notes", {
-    params: {
-      ...(searchQuery !== "" && { search: searchQuery }),
-      page: pageNumber,
-      perPage: itemsPerPage,
-      ...(tagFilter && tagFilter !== "All" && { tag: tagFilter }),
-    },
-  });
-
-  return responseData;
+export const registerUser = async (credentials: UserAuth): Promise<User> => {
+  const { data } = await instance.post<User>("/auth/register", credentials);
+  return data;
 };
 
-export const addNewNote = async (newNoteDetails: NewNote): Promise<Note> => {
-  const { data: createdNoteData } = await nextApi.post<Note>(
-    "/notes",
-    newNoteDetails
-  );
-  return createdNoteData;
+export const loginUser = async (credentials: UserAuth): Promise<User> => {
+  const { data } = await instance.post<User>("/auth/login", credentials);
+  return data;
 };
 
-export const removeNote = async (noteIdentifier: string): Promise<Note> => {
-  const { data: deletedNoteData } = await nextApi.delete<Note>(
-    `/notes/${noteIdentifier}`
-  );
-  return deletedNoteData;
+export const logoutUser = async (): Promise<void> => {
+  await instance.post("/auth/logout");
 };
 
-export const getNoteDetailsById = async (
-  noteIdString: string
-): Promise<Note> => {
-  const { data: singleNoteData } = await nextApi.get<Note>(
-    `/notes/${noteIdString}`
-  );
-  return singleNoteData;
+export const checkSession = async (): Promise<User> => {
+  const { data } = await instance.get<User>("/auth/session");
+  return data;
 };
 
-export const userSignUp = async (
-  registrationPayload: UserRequest
-): Promise<User> => {
-  const apiRegistrationResponse = await nextApi.post<User>(
-    "/auth/register",
-    registrationPayload
-  );
-  return apiRegistrationResponse.data;
+export const fetchCurrentUser = async (): Promise<User> => {
+  const { data } = await instance.get<User>("/users/me");
+  return data;
 };
 
-export const userSignIn = async (loginPayload: UserRequest): Promise<User> => {
-  const apiLoginResponse = await nextApi.post<User>(
-    "/auth/login",
-    loginPayload
-  );
-  return apiLoginResponse.data;
-};
-
-export const userSignOut = async (): Promise<void> => {
-  await nextApi.post("/auth/logout");
-};
-
-export const verifySessionStatus = async (): Promise<{
-  success: boolean;
-  message: string;
-}> => {
-  try {
-    const { data: sessionData, status: httpStatus } =
-      await nextApi.get<CheckSessionResponse>("/auth/session");
-    return { success: httpStatus === 200, message: sessionData.message };
-  } catch (requestError) {
-    const axError = requestError as AxiosError<{ message: string }>;
-    if (axError.response?.status === 400 || axError.response?.status === 401) {
-      return { success: false, message: axError.response.data.message };
-    }
-    throw requestError;
-  }
-};
-
-export const retrieveCurrentUser = async (): Promise<User> => {
-  const { data: currentUserData } = await nextApi.get<User>("/users/me");
-  return currentUserData;
-};
-
-export const modifyUserProfile = async (updatePayload: {
-  username: string;
-}): Promise<User> => {
-  const userUpdateResponse = await nextApi.patch<User>(
-    "/users/me",
-    updatePayload
-  );
-  return userUpdateResponse.data;
+export const updateUser = async (updatedFields: UserUpdate): Promise<User> => {
+  const { data } = await instance.patch<User>("/users/me", updatedFields);
+  return data;
 };

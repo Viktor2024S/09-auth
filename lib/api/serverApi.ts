@@ -1,69 +1,13 @@
-import { User } from "@/types/user";
-import { Note, NotesResponse } from "@/types/note";
-import { nextApi } from "./api";
 import { cookies } from "next/headers";
+import instance from "./api";
+import { User } from "@/types/user";
 
-const retrieveRequestCookieHeader = async (): Promise<string> => {
-  const cookieJar = await cookies();
-  return cookieJar.toString();
-};
-
-export const fetchAuthenticatedUser = async (): Promise<User> => {
-  const requestCookieData = await retrieveRequestCookieHeader();
-  const { data: userDataResponse } = await nextApi.get<User>("/users/me", {
+export const serverFetchCurrentUser = async (): Promise<User> => {
+  const cookieStore = cookies();
+  const { data } = await instance.get<User>("/users/me", {
     headers: {
-      Cookie: requestCookieData,
+      Cookie: cookieStore.toString(),
     },
   });
-  return userDataResponse;
-};
-
-export const validateServerSession = async () => {
-  const sessionCookieInfo = await retrieveRequestCookieHeader();
-  const sessionCheckResponse = await nextApi.get("/auth/session", {
-    headers: {
-      Cookie: sessionCookieInfo,
-    },
-  });
-  return sessionCheckResponse;
-};
-
-export const retrieveNoteDetailById = async (
-  noteEntryId: string
-): Promise<Note> => {
-  const noteCookieHeader = await retrieveRequestCookieHeader();
-  const { data: noteDetailPayload } = await nextApi.get<Note>(
-    `/notes/${noteEntryId}`,
-    {
-      headers: {
-        Cookie: noteCookieHeader,
-      },
-    }
-  );
-  return noteDetailPayload;
-};
-
-export const queryServerNotes = async (
-  queryText: string,
-  currentPage = 1,
-  itemsPerPage = 10,
-  tagParam?: string
-): Promise<NotesResponse> => {
-  const notesCookieInfo = await retrieveRequestCookieHeader();
-  const { data: notesCollectionData } = await nextApi.get<NotesResponse>(
-    "/notes",
-    {
-      params: {
-        ...(queryText !== "" && { search: queryText }),
-        page: currentPage,
-        perPage: itemsPerPage,
-        ...(tagParam && tagParam !== "All" && { tag: tagParam }),
-      },
-      headers: {
-        Cookie: notesCookieInfo,
-      },
-    }
-  );
-
-  return notesCollectionData;
+  return data;
 };

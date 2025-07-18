@@ -1,38 +1,39 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
-import { verifySessionStatus, retrieveCurrentUser } from "@/lib/api/clientApi";
+import { checkSession } from "@/lib/api/clientApi";
+import Loader from "@/components/Loader/Loader";
 
-type AuthContextProviderProps = {
-  wrappedContent: React.ReactNode;
+type AuthProviderProps = {
+  children: React.ReactNode;
 };
 
-const ApplicationAuthenticator = ({
-  wrappedContent,
-}: AuthContextProviderProps) => {
-  const setAuthUser = useAuthStore((state) => state.setUser);
-  const resetAuthStatus = useAuthStore((state) => state.clearIsAuthenticated);
+const AuthProvider = ({ children }: AuthProviderProps) => {
+  const { setUser } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const performSessionCheck = async () => {
+    const checkUserSession = async () => {
       try {
-        const sessionVerificationResult = await verifySessionStatus();
-        if (sessionVerificationResult.success) {
-          const authenticatedUserData = await retrieveCurrentUser();
-          if (authenticatedUserData) setAuthUser(authenticatedUserData);
-        } else {
-          resetAuthStatus();
-        }
-      } catch (sessionCheckError) {
-        resetAuthStatus();
-        console.error("Authentication verification failed:", sessionCheckError);
+        const user = await checkSession();
+        setUser(user);
+      } catch (error) {
+        console.error("Failed to check user session:", error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
     };
-    performSessionCheck();
-  }, [setAuthUser, resetAuthStatus]);
 
-  return wrappedContent;
+    checkUserSession();
+  }, [setUser]);
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  return <>{children}</>;
 };
 
-export default ApplicationAuthenticator;
+export default AuthProvider;

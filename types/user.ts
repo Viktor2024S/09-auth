@@ -1,23 +1,18 @@
 export interface User {
   _id: string;
+  username: string;
   email: string;
-  username?: string;
-  avatar?: string;
+  avatar: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UserAuth {
   email: string;
-  password: string;
+  password?: string;
 }
 
 export interface UserUpdate {
   username?: string;
-  email?: string;
-  avatar?: string | null;
-}
-
-export type UserRequest = UserAuth;
-
-export interface CheckSessionResponse {
-  message: string;
+  avatar?: string;
 }
