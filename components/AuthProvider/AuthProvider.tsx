@@ -10,7 +10,7 @@ type AuthProviderProps = {
 };
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
-  const { setUser } = useAuthStore();
+  const { setUser, clearIsAuthenticated } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -20,14 +20,14 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         setUser(user);
       } catch (error) {
         console.error("Failed to check user session:", error);
-        setUser(null);
+        clearIsAuthenticated();
       } finally {
         setIsLoading(false);
       }
     };
 
     checkUserSession();
-  }, [setUser]);
+  }, [setUser, clearIsAuthenticated]);
 
   if (isLoading) {
     return <Loader />;

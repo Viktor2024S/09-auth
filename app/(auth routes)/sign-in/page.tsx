@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
 import { loginUser } from "@/lib/api/clientApi";
-import css from "./page.module.css";
+import css from "./SignInPage.module.css";
 import { AxiosError } from "axios";
 
 export default function SignInPage() {

@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { serverFetchCurrentUser } from "@/lib/api/serverApi";
-import css from "./page.module.css";
+import css from "./ProfilePage.module.css";
 import { redirect } from "next/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -36,8 +36,8 @@ export default async function ProfilePage() {
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
+        <h1 className={css.formTitle}>Profile Page</h1>
         <div className={css.header}>
-          <h1 className={css.formTitle}>Profile Page</h1>
           <Link href="/profile/edit" className={css.editProfileButton}>
             Edit Profile
           </Link>

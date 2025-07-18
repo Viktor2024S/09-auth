@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
 import { registerUser } from "@/lib/api/clientApi";
-import css from "./page.module.css";
+import css from "./SignUpPage.module.css";
 import { AxiosError } from "axios";
 
 export default function SignUpPage() {

@@ -3,7 +3,7 @@ import instance from "./api";
 import { User } from "@/types/user";
 
 export const serverFetchCurrentUser = async (): Promise<User> => {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const { data } = await instance.get<User>("/users/me", {
     headers: {
       Cookie: cookieStore.toString(),
