@@ -20,9 +20,7 @@ const AppNavigationBar = () => {
 
         <nav aria-label="Main Navigation" className={headerStyles.navigation}>
           <ul className={headerStyles.navigation}>
-            {" "}
             <li className={headerStyles.navigationItem}>
-              {" "}
               <Link href={dynamicHomeLink} className={headerStyles.link}>
                 Home
               </Link>
