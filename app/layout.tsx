@@ -1,6 +1,7 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
-import AppNavigationBar from "@/components/Header/Header";
+import AppNavigationBar from "@/components/Header/Header"; // Це ваш хедер
 import Footer from "@/components/Footer/Footer";
 import QueryClientWrapper from "@/components/TanStackProvider/TanStackProvider";
 import ApplicationAuthenticator from "../components/AuthProvider/AuthProvider";
@@ -51,14 +52,13 @@ export default function ApplicationRootLayout({
           <ApplicationAuthenticator
             wrappedContent={
               <>
-                <AppNavigationBar
-                  wrappedContent={
-                    <main>
-                      {children}
-                      {modal}
-                    </main>
-                  }
-                />
+                <AppNavigationBar />
+
+                <main>
+                  {children}
+                  {modal}
+                </main>
+
                 <Footer />
               </>
             }

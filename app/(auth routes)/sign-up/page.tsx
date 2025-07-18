@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import localStyles from "./SignUpPage.module.css";
 import { useAuthStore } from "@/lib/store/authStore";
-import { register } from "@/lib/api/clientApi";
+import { userSignUp } from "@/lib/api/clientApi";
 import { UserRequest } from "@/types/user";
 
 const NewUserRegistrationForm = () => {
@@ -19,7 +19,7 @@ const NewUserRegistrationForm = () => {
     };
 
     try {
-      const apiResponse = await register(userData);
+      const apiResponse = await userSignUp(userData);
       if (apiResponse) {
         updateUser(apiResponse);
         navigationTool.push("/profile");
