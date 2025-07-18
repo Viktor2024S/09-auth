@@ -1,37 +1,66 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useState } from "react";
-import { Tag } from "@/types/note";
-import css from "./TagsMenu.module.css";
+import noteTagsData from "@/lib/tags";
+import menuStyles from "./TagsMenu.module.css";
 
-const tags: (Tag | "All")[] = [
-  "All",
-  "Todo",
-  "Work",
-  "Personal",
-  "Meeting",
-  "Shopping",
-];
+export const NoteTagsDropdownMenu = () => {
+  const [isDropdownActive, setDropdownActive] = useState(false);
+  const toggleDropdownState = () =>
+    setDropdownActive((prevActive) => !prevActive);
 
-export default function TagsMenu() {
-  const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => {
+    const handleKeyboardEscape = (keyboardEvent: KeyboardEvent) => {
+      if (keyboardEvent.key === "Escape") {
+        setDropdownActive(false);
+      }
+    };
+
+    if (isDropdownActive) {
+      document.addEventListener("keydown", handleKeyboardEscape);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyboardEscape);
+    };
+  }, [isDropdownActive]);
 
   return (
-    <div className={css.menuContainer}>
-      <button className={css.menuButton} onClick={() => setIsOpen(!isOpen)}>
+    <div className={menuStyles.menuContainer}>
+      <button
+        className={menuStyles.menuButton}
+        onClick={toggleDropdownState}
+        aria-controls="tags-menu"
+        aria-expanded={isDropdownActive}
+        aria-haspopup="true"
+      >
         Notes ▾
       </button>
-      {isOpen && (
-        <ul className={css.menuList}>
-          {tags.map((tag) => (
-            <li key={tag} className={css.menuItem}>
+
+      {isDropdownActive && (
+        <ul id="tags-menu" className={menuStyles.menuList} role="menu">
+          <li className={menuStyles.menuItem} role="menuitem">
+            <Link
+              href={`/notes/filter/All`}
+              className={menuStyles.menuLink}
+              onClick={toggleDropdownState}
+            >
+              All
+            </Link>
+          </li>
+          {noteTagsData.map((currentTag) => (
+            <li
+              className={menuStyles.menuItem}
+              key={currentTag}
+              role="menuitem"
+            >
               <Link
-                href={`/notes/filter/${tag}`}
-                className={css.menuLink}
-                onClick={() => setIsOpen(false)}
+                href={`/notes/filter/${currentTag}`}
+                className={menuStyles.menuLink}
+                onClick={toggleDropdownState}
               >
-                {tag === "All" ? "All notes" : tag}
+                {currentTag}
               </Link>
             </li>
           ))}
@@ -39,4 +68,4 @@ export default function TagsMenu() {
       )}
     </div>
   );
-}
+};
