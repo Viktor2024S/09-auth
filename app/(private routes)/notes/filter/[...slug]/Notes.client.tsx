@@ -9,7 +9,7 @@ import { useState } from "react";
 import { SearchBox } from "@/components/SearchBox/SearchBox";
 import { useDebounce } from "use-debounce";
 import { Toaster } from "react-hot-toast";
-import { ErrorMessage } from "@/components/ErrorMessage/ErrorMessage";
+import { ErrorMessage } from "@/components/ErrorMesage/ErrorMesage";
 import { Loader } from "@/components/Loader/Loader";
 import type { NotesResponse } from "@/types/note";
 import { useRouter } from "next/navigation";
