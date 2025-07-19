@@ -1,66 +1,63 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import noteTagsData, { Tag } from "@/lib/tags";
-import menuStyles from "./TagsMenu.module.css";
+import tags from "@/lib/tags";
+import styles from "./TagsMenu.module.css";
 
-export const NoteTagsDropdownMenu = () => {
-  const [isDropdownActive, setDropdownActive] = useState(false);
-  const toggleDropdownState = () =>
-    setDropdownActive((prevActive) => !prevActive);
+export const TagsMenu = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleToggle = () => setMenuOpen((prev) => !prev);
 
   useEffect(() => {
-    const handleKeyboardEscape = (keyboardEvent: KeyboardEvent) => {
-      if (keyboardEvent.key === "Escape") {
-        setDropdownActive(false);
+    const onKeyPress = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
       }
     };
 
-    if (isDropdownActive) {
-      document.addEventListener("keydown", handleKeyboardEscape);
+    if (menuOpen) {
+      window.addEventListener("keydown", onKeyPress);
     }
 
     return () => {
-      document.removeEventListener("keydown", handleKeyboardEscape);
+      window.removeEventListener("keydown", onKeyPress);
     };
-  }, [isDropdownActive]);
+  }, [menuOpen]);
 
   return (
-    <div className={menuStyles.menuContainer}>
+    <div className={styles.menuContainer}>
       <button
-        className={menuStyles.menuButton}
-        onClick={toggleDropdownState}
-        aria-controls="tags-menu"
-        aria-expanded={isDropdownActive}
+        className={styles.menuButton}
+        onClick={handleToggle}
         aria-haspopup="true"
+        aria-controls="tags-menu"
+        aria-expanded={menuOpen}
       >
         Notes ▾
       </button>
 
-      {isDropdownActive && (
-        <ul id="tags-menu" className={menuStyles.menuList} role="menu">
-          <li className={menuStyles.menuItem} role="menuitem">
+      {menuOpen && (
+        <ul id="tags-menu" className={styles.menuList} role="menu">
+          <li className={styles.menuItem} role="menuitem">
             <Link
-              href={`/notes/filter/All`}
-              className={menuStyles.menuLink}
-              onClick={toggleDropdownState}
+              href="/notes/filter/All"
+              className={styles.menuLink}
+              onClick={handleToggle}
             >
               All
             </Link>
           </li>
-          {noteTagsData.map((currentTag: Tag) => (
-            <li
-              className={menuStyles.menuItem}
-              key={currentTag}
-              role="menuitem"
-            >
+
+          {tags.map((tagName) => (
+            <li key={tagName} className={styles.menuItem} role="menuitem">
               <Link
-                href={`/notes/filter/${currentTag}`}
-                className={menuStyles.menuLink}
-                onClick={toggleDropdownState}
+                href={`/notes/filter/${tagName}`}
+                className={styles.menuLink}
+                onClick={handleToggle}
               >
-                {currentTag}
+                {tagName}
               </Link>
             </li>
           ))}

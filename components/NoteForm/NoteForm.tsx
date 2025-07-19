@@ -1,57 +1,81 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-// import * as z from "zod"; // <-- REMOVE THIS LINE
-import toast from "react-hot-toast";
-import type { NoteData } from "@/types/note";
-import { noteSchema } from "@/types/note";
-import { createNoteAction } from "@/app/actions";
-import css from "./NoteForm.module.css";
+import formStyles from "./NoteForm.module.css";
+import { useId } from "react";
+import { createNote } from "@/lib/api/clientApi";
+import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNoteDraftStore } from "@/lib/store/noteStore";
 
-export const NoteForm = () => {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<NoteData>({
-    resolver: zodResolver(noteSchema),
+const NoteForm = () => {
+  const fieldId = useId();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const { draft, setDraft, clearDraft } = useNoteDraftStore();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: createNote,
+    onSuccess: () => {
+      clearDraft();
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      router.push("/notes/filter/All");
+    },
   });
 
-  const onSubmit = async (data: NoteData) => {
-    try {
-      await createNoteAction(data);
-      toast.success("Note created successfully!");
-      reset();
-    } catch (error) {
-      toast.error("Failed to create note.");
-      console.error("Note creation error:", error);
-    }
+  const handleChange = (
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    setDraft({
+      ...draft,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    mutate(draft);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={css.form}>
-      <div>
-        <label htmlFor="title">Title</label>
-        <input id="title" {...register("title")} className={css.input} />
-        {errors.title && <p className={css.error}>{errors.title.message}</p>}
-      </div>
-      <div>
-        <label htmlFor="content">Content</label>
-        <textarea
-          id="content"
-          {...register("content")}
-          className={css.textarea}
+    <form className={formStyles.form} onSubmit={handleSubmit}>
+      <div className={formStyles.formGroup}>
+        <label htmlFor={`${fieldId}-title`}>Title</label>
+        <input
+          id={`${fieldId}-title`}
+          type="text"
+          name="title"
+          className={formStyles.input}
+          required
+          value={draft?.title}
+          onChange={handleChange}
         />
-        {errors.content && (
-          <p className={css.error}>{errors.content.message}</p>
-        )}
       </div>
-      <div>
-        <label htmlFor="tag">Tag</label>
-        <select id="tag" {...register("tag")} className={css.select}>
-          <option value="">Select a tag</option>
+
+      <div className={formStyles.formGroup}>
+        <label htmlFor={`${fieldId}-content`}>Content</label>
+        <textarea
+          id={`${fieldId}-content`}
+          name="content"
+          rows={8}
+          className={formStyles.textarea}
+          value={draft.content}
+          onChange={handleChange}
+        />
+      </div>
+
+      <div className={formStyles.formGroup}>
+        <label htmlFor={`${fieldId}-tag`}>Tag</label>
+        <select
+          id={`${fieldId}-tag`}
+          name="tag"
+          className={formStyles.select}
+          value={draft.tag}
+          onChange={handleChange}
+          required
+        >
           <option value="Todo">Todo</option>
           <option value="Work">Work</option>
           <option value="Personal">Personal</option>
@@ -63,11 +87,26 @@ export const NoteForm = () => {
           <option value="Health">Health</option>
           <option value="Important">Important</option>
         </select>
-        {errors.tag && <p className={css.error}>{errors.tag.message}</p>}
       </div>
-      <button type="submit" className={css.button}>
-        Create Note
-      </button>
+
+      <div className={formStyles.actions}>
+        <button
+          type="button"
+          className={formStyles.cancelButton}
+          onClick={() => router.back()}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className={formStyles.submitButton}
+          disabled={isPending}
+        >
+          {isPending ? "Creating..." : "Create note"}
+        </button>
+      </div>
     </form>
   );
 };
+
+export default NoteForm;

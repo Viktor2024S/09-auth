@@ -1,26 +1,26 @@
-// !
+import type { Metadata } from "next";
+import { getUserFromServer } from "@/lib/api/serverApi";
 import Image from "next/image";
 import Link from "next/link";
-import { getUserFromServer } from "@/lib/api/serverApi";
 import styles from "./ProfilePage.module.css";
-import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const currentUser = await getUserFromServer();
+  const user = await getUserFromServer();
+
+  const avatarUrl =
+    user.avatar || "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg";
 
   return {
-    title: `NoteHub — Profile: ${currentUser.username}`,
+    title: `NoteHub — Profile: ${user.username}`,
     description: "Your personal profile page in NoteHub.",
     openGraph: {
-      title: `Profile — ${currentUser.username}`,
+      title: `Profile — ${user.username}`,
       description:
         "Check your username, email, and avatar in your NoteHub profile.",
-      url: "https://09-auth-ruddy-nine.vercel.app/profile",
+      url: "https://09-auth-pi.vercel.app/profile",
       images: [
         {
-          url:
-            currentUser.avatar ||
-            "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+          url: avatarUrl,
           width: 1200,
           height: 630,
           alt: "User Avatar",
@@ -29,17 +29,22 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `Profile — ${currentUser.username}`,
+      title: `Profile — ${user.username}`,
       description: "Manage your personal profile details in NoteHub.",
-      images: [
-        currentUser.avatar ||
-          "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
-      ],
+      images: [avatarUrl],
     },
   };
 }
+
 const ProfilePage = async () => {
-  const currentUser = await getUserFromServer();
+  const user = await getUserFromServer();
+
+  const avatar =
+    user?.avatar ||
+    "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg";
+  const username = user?.username || "your_username";
+  const email = user?.email || "your_email@example.com";
+
   return (
     <main className={styles.mainContent}>
       <section className={styles.profileCard}>
@@ -49,22 +54,25 @@ const ProfilePage = async () => {
             Edit Profile
           </Link>
         </header>
-        <div className={styles.avatarWrapper}>
+
+        <figure className={styles.avatarWrapper}>
           <Image
-            src={
-              currentUser?.avatar ||
-              "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"
-            }
+            src={avatar}
             alt="User Avatar"
             width={120}
             height={120}
             className={styles.avatar}
             priority
           />
-        </div>
+        </figure>
+
         <section className={styles.profileInfo}>
-          <p>Username: {currentUser?.username || "your_username"}</p>
-          <p>Email: {currentUser?.email || "your_email@example.com"}</p>
+          <p>
+            <strong>Username:</strong> {username}
+          </p>
+          <p>
+            <strong>Email:</strong> {email}
+          </p>
         </section>
       </section>
     </main>

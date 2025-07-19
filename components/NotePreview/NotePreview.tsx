@@ -1,71 +1,43 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { clientFetchNoteById } from "@/lib/api/clientApi";
+import { fetchNoteById } from "@/lib/api/clientApi";
 import styles from "./NotePreview.module.css";
 
-export type Note = {
-  id: string;
-  title: string;
-  content: string;
-  tag?: string;
-  createdAt?: string;
+type Props = {
+  noteId: string;
+  onClose: () => void;
 };
 
-interface NotePreviewProps {
-  noteId: string;
-}
-
-const NotePreview = ({ noteId }: NotePreviewProps) => {
+export default function NoteDetailsClient({ noteId, onClose }: Props) {
   const {
     data: note,
     isLoading,
-    isError,
     error,
-  } = useQuery<Note, Error>({
+  } = useQuery({
     queryKey: ["note", noteId],
-    queryFn: () => clientFetchNoteById(noteId),
-    enabled: !!noteId,
+    queryFn: () => fetchNoteById(noteId),
+    refetchOnMount: false,
   });
 
-  if (isLoading) {
-    return <div className={styles.container}>Завантаження нотатки...</div>;
-  }
+  if (isLoading) return <p>Loading, please wait...</p>;
 
-  if (isError) {
-    return (
-      <div className={styles.container}>
-        Помилка завантаження нотатки: {error.message}
-      </div>
-    );
-  }
+  if (error || !note) return <p>Something went wrong.</p>;
 
-  if (!note) {
-    return <div className={styles.container}>Нотатку не знайдено.</div>;
-  }
-
-  const formattedDate = note.createdAt
-    ? new Date(note.createdAt).toLocaleDateString("uk-UA", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "Дата невідома";
+  const created = note.createdAt || note.updatedAt;
 
   return (
-    <div className={styles.container}>
+    <section className={styles.container}>
       <div className={styles.item}>
-        <div className={styles.header}>
+        <header className={styles.header}>
           <h2>{note.title}</h2>
-          {note.tag && <span className={styles.tag}>{note.tag}</span>}
-        </div>
-        <p className={styles.content}>{note.content}</p>
-        <p className={styles.date}>Створено: {formattedDate}</p>
+          <button className={styles.backBtn} onClick={onClose}>
+            Go back
+          </button>
+        </header>
+        <article className={styles.content}>{note.content}</article>
+        <footer className={styles.date}>Created: {created}</footer>
       </div>
-    </div>
+    </section>
   );
-};
-
-export default NotePreview;
+}

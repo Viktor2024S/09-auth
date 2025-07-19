@@ -3,13 +3,14 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "NoteHub: Sign up",
   description:
-    "Create a free account and start organizing your notes with NoteHub.",
+    "Register your free NoteHub profile and take control of your notes today.",
   openGraph: {
+    type: "website",
+    url: "https://09-auth-pi.vercel.app/sign-up",
+    siteName: "NoteHub",
     title: "NoteHub: Sign up",
     description:
-      "Create a free account and start organizing your notes with NoteHub.",
-    url: "https://09-auth-ruddy-nine.vercel.app/sign-up",
-    siteName: "NoteHub",
+      "Register your free NoteHub profile and take control of your notes today.",
     images: [
       {
         url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
@@ -18,13 +19,12 @@ export const metadata: Metadata = {
         alt: "NoteHub Sign up",
       },
     ],
-    type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "NoteHub: Sign up",
     description:
-      "Create your NoteHub account and start managing your notes efectively.",
+      "Register your free NoteHub profile and take control of your notes today.",
     images: ["https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"],
   },
 };

@@ -2,14 +2,14 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "NoteHub: Sign in",
-  description:
-    "Sign in to your NoteHub account and manage your notes efectively.",
+  description: "Access your NoteHub space and control your notes effortlessly.",
   openGraph: {
+    type: "website",
+    url: "https://09-auth-pi.vercel.app/sign-in",
+    siteName: "NoteHub",
     title: "NoteHub: Sign in",
     description:
-      "Sign in to your NoteHub account and manage your notes easily.",
-    url: "https://09-auth-ruddy-nine.vercel.app/sign-in",
-    siteName: "NoteHub",
+      "Access your NoteHub space and control your notes effortlessly.",
     images: [
       {
         url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
@@ -18,13 +18,12 @@ export const metadata: Metadata = {
         alt: "NoteHub Sign in",
       },
     ],
-    type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "NoteHub: Sign in",
     description:
-      "Sign in to your NoteHub account and manage your notes easily.",
+      "Access your NoteHub space and control your notes effortlessly.",
     images: ["https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"],
   },
 };

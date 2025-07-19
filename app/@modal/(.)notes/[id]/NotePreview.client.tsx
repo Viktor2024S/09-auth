@@ -1,34 +1,24 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { clientFetchNoteById } from "@/lib/api/clientApi";
-import Loader from "@/components/Loader/Loader";
-import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
+import { Modal } from "@/components/Modal/Modal";
+import NoteDetailsClient from "@/components/NotePreview/NotePreview";
+import { useRouter } from "next/navigation";
 
-interface NotePreviewProps {
+interface PreviewClientProps {
   noteId: string;
 }
 
-export default function NotePreview({ noteId }: NotePreviewProps) {
-  const {
-    data: note,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ["note", noteId],
-    queryFn: () => clientFetchNoteById(noteId),
-  });
-
-  if (isLoading) return <Loader />;
-  if (isError) return <ErrorMessage displayMessage={error.message} />;
-  if (!note)
-    return <ErrorMessage displayMessage="Note preview not available." />;
+const PreviewClient = ({ noteId }: PreviewClientProps) => {
+  const router = useRouter();
+  const onClose = () => {
+    router.back();
+  };
 
   return (
-    <div>
-      <h2>{note.title}</h2>
-      <p>{note.content}</p>
-    </div>
+    <Modal onClose={onClose}>
+      <NoteDetailsClient noteId={noteId} onClose={onClose} />
+    </Modal>
   );
-}
+};
+
+export default PreviewClient;

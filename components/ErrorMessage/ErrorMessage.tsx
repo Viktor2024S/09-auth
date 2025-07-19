@@ -2,16 +2,15 @@
 
 import { useEffect } from "react";
 import { toast } from "react-hot-toast";
-import styles from "./ErrorMessage.module.css";
 
 interface ErrorMessageProps {
-  displayMessage: string;
+  message: string;
 }
 
-export default function ErrorMessage({ displayMessage }: ErrorMessageProps) {
+export const ErrorMessage = ({ message }: ErrorMessageProps) => {
   useEffect(() => {
-    toast.error(displayMessage);
-  }, [displayMessage]);
+    toast.error(message);
+  }, [message]);
 
-  return <div className={styles.error}>{displayMessage}</div>;
-}
+  return null;
+};

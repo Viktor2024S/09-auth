@@ -1,31 +1,30 @@
 "use client";
 
-import { useAuthStore } from "@/lib/store/authStore";
-import css from "./Header.module.css";
 import Link from "next/link";
+import { useAuthStore } from "@/lib/store/authStore";
 import { TagsMenu } from "@/components/TagsMenu/TagsMenu";
 import AuthNavigation from "@/components/AuthNavigation/AuthNavigation";
+import styles from "./Header.module.css";
 
 const Header = () => {
-  const { isAuthenticated } = useAuthStore();
+  const authStatus = useAuthStore((state) => state.isAuthenticated);
 
-  const homeHref = isAuthenticated ? "/profile" : "/";
+  const landingPage = authStatus ? "/profile" : "/";
 
   return (
-    <header className={css.header}>
-      <Link href="/" aria-label="Home" className={css.headerLink}>
+    <header className={styles.header}>
+      <Link href="/" aria-label="Home" className={styles.headerLink}>
         NoteHub
       </Link>
-
-      <nav aria-label="Main Navigation" className={css.navigation}>
-        <ul className={css.navList}>
-          <li className={css.navigationItem}>
-            <Link href={homeHref} className={css.navigationLink}>
+      <nav className={styles.navigation} aria-label="Main Navigation">
+        <ul className={styles.navList}>
+          <li className={styles.navigationItem}>
+            <Link href={landingPage} className={styles.navigationLink}>
               Home
             </Link>
           </li>
-          {isAuthenticated && (
-            <li className={css.navigationItem}>
+          {authStatus && (
+            <li className={styles.navigationItem}>
               <TagsMenu />
             </li>
           )}

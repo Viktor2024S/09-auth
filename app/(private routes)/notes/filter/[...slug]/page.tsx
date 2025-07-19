@@ -1,64 +1,55 @@
-import { Metadata } from "next";
-import { serverFetchNotes } from "@/lib/api/serverApi"; // Переконайтеся, що fetchNotes тепер serverFetchNotes
 import NotesClient from "./Notes.client";
-import { Tag, isTagOrAll } from "@/types/note"; // Імпортуємо isTagOrAll
+import type { Metadata } from "next";
+import { fetchNotesServer } from "@/lib/api/serverApi";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug?: string[] }>;
-}): Promise<Metadata> {
+interface Props {
+  params: Promise<{ slug: string[] }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const tag: Tag | "All" = slug?.[0] && isTagOrAll(slug[0]) ? slug[0] : "All";
-  const pageTitle = tag === "All" ? "All Notes" : `Notes with tag: ${tag}`;
-  const pageDescription = `Browse and manage your notes. Current filter: ${tag}.`;
-
-  const baseUrl = "https://09-auth-pi.vercel.app";
-  const currentUrl = `${baseUrl}/notes/filter/${tag}`;
+  const filterCategory = slug[0];
 
   return {
-    title: pageTitle,
-    description: pageDescription,
+    title: `Category: ${filterCategory}`,
+    description: `View all notes filtered by category: ${filterCategory}.`,
     openGraph: {
-      title: pageTitle,
-      description: pageDescription,
-      url: currentUrl,
+      title: `Notes filtered by: ${filterCategory}`,
+      description: `Browse all notes in the "${filterCategory}" category.`,
+      url: `https://09-auth-pi.vercel.app/notes/filter/${slug.join("/")}`,
+      siteName: "NoteHub",
       images: [
         {
-          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+          url: "https://placehold.co/1200x630",
           width: 1200,
           height: 630,
-          alt: "NoteHub Notes Filter",
+          alt: filterCategory,
         },
       ],
-      locale: "en_US",
-      type: "website",
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Notes filtered by: ${filterCategory}`,
+      description: `Browse all notes in the "${filterCategory}" category.`,
+      images: ["https://ac.goit.global/fullstack/react/og-meta.jpg"],
     },
   };
 }
 
-export default async function NotesFilterPage({
-  params,
-}: {
-  params: Promise<{ slug?: string[] }>;
-}) {
+const NotesByCategory = async ({ params }: Props) => {
   const { slug } = await params;
-  const tag: Tag | "All" = slug?.[0] && isTagOrAll(slug[0]) ? slug[0] : "All";
-  const currentPage = 1;
-  const initialSearchQuery = "";
-
-  const initialData = await serverFetchNotes(
-    currentPage,
-    initialSearchQuery,
-    tag
-  );
+  const categoryParam = slug[0]?.toLowerCase() === "all" ? undefined : slug[0];
+  const fetchedNotes = await fetchNotesServer("", 1, 10, categoryParam);
 
   return (
-    <NotesClient
-      initialPage={currentPage}
-      initialTag={tag}
-      initialSearchQuery={initialSearchQuery}
-      initialData={initialData}
-    />
+    <section>
+      <NotesClient
+        initialData={fetchedNotes}
+        activeTag={categoryParam ?? "All"}
+      />
+    </section>
   );
-}
+};
+
+export default NotesByCategory;
