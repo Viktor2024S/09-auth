@@ -4,25 +4,13 @@ import { User } from "@/types/user";
 import { Note, NotesResponse } from "@/types/note";
 
 const getCookieHeader = async (): Promise<string> => {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   return cookieStore.toString();
 };
 
 export const getUserFromServer = async (): Promise<User> => {
   const cookieHeader = await getCookieHeader();
   const { data } = await nextServer.get<User>("/users/me", {
-    headers: {
-      Cookie: cookieHeader,
-    },
-  });
-  return data;
-};
-
-//  serverFetchCurrentUser
-export const serverFetchCurrentUser = async (): Promise<User> => {
-  const cookieHeader = await getCookieHeader();
-  const { data } = await nextServer.get<User>("/api/users/me", {
-    // /api/users/me"
     headers: {
       Cookie: cookieHeader,
     },
