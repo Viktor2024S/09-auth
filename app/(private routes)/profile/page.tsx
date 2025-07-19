@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
 import { getUserFromServer } from "@/lib/api/serverApi";
 import Image from "next/image";
+import css from "./ProfilePage.module.css";
 import Link from "next/link";
-import styles from "./ProfilePage.module.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const user = await getUserFromServer();
-
-  const avatarUrl =
-    user.avatar || "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg";
 
   return {
     title: `NoteHub — Profile: ${user.username}`,
@@ -17,10 +14,12 @@ export async function generateMetadata(): Promise<Metadata> {
       title: `Profile — ${user.username}`,
       description:
         "Check your username, email, and avatar in your NoteHub profile.",
-      url: "https://09-auth-pi.vercel.app/profile",
+      url: "https://09-auth-ruddy-nine.vercel.app/profile",
       images: [
         {
-          url: avatarUrl,
+          url:
+            user.avatar ||
+            "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
           width: 1200,
           height: 630,
           alt: "User Avatar",
@@ -31,50 +30,43 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: `Profile — ${user.username}`,
       description: "Manage your personal profile details in NoteHub.",
-      images: [avatarUrl],
+      images: [
+        user.avatar ||
+          "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+      ],
     },
   };
 }
 
 const ProfilePage = async () => {
   const user = await getUserFromServer();
-
-  const avatar =
-    user?.avatar ||
-    "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg";
-  const username = user?.username || "your_username";
-  const email = user?.email || "your_email@example.com";
-
   return (
-    <main className={styles.mainContent}>
-      <section className={styles.profileCard}>
-        <header className={styles.header}>
-          <h1 className={styles.formTitle}>Profile Page</h1>
-          <Link href="/profile/edit" className={styles.editProfileButton}>
+    <main className={css.mainContent}>
+      <div className={css.profileCard}>
+        <div className={css.header}>
+          <h1 className={css.formTitle}>Profile Page</h1>
+          <Link href="/profile/edit" className={css.editProfileButton}>
             Edit Profile
           </Link>
-        </header>
-
-        <figure className={styles.avatarWrapper}>
+        </div>
+        <div className={css.avatarWrapper}>
           <Image
-            src={avatar}
+            src={
+              user?.avatar ||
+              "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"
+            }
             alt="User Avatar"
             width={120}
             height={120}
-            className={styles.avatar}
+            className={css.avatar}
             priority
           />
-        </figure>
-
-        <section className={styles.profileInfo}>
-          <p>
-            <strong>Username:</strong> {username}
-          </p>
-          <p>
-            <strong>Email:</strong> {email}
-          </p>
-        </section>
-      </section>
+        </div>
+        <div className={css.profileInfo}>
+          <p>Username: {user?.username || "your_username"}</p>
+          <p>Email: {user?.email || "your_email@example.com"}</p>
+        </div>
+      </div>
     </main>
   );
 };

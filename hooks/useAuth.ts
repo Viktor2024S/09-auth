@@ -1,5 +1,5 @@
 "use client";
-import { checkSession, logoutUser as logout } from "@/lib/api/clientApi";
+import { checkSession, logout } from "@/lib/api/clientApi";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -23,9 +23,10 @@ export const useAuth = () => {
   const checkAuth = async () => {
     try {
       const res = await checkSession();
-      if (res) {
+      if (res.success) {
         setIsAuthenticated(true);
-        return;
+      } else {
+        setIsAuthenticated(false);
       }
     } catch (error) {
       console.error("Auth check failed:", error);
