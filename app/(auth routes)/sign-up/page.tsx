@@ -1,68 +1,75 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
-import { registerUser } from "@/lib/api/clientApi";
-import css from "./SignUpPage.module.css";
-import { AxiosError } from "axios";
+import { register } from "@/lib/api/clientApi";
+import { UserRequest } from "@/types/user";
+import styles from "./SignUpPage.module.css";
 
-export default function SignUpPage() {
-  const router = useRouter();
-  const { setUser } = useAuthStore();
-  const [error, setError] = useState("");
+const SignUpPage = () => {
+  const { push } = useRouter();
+  const { setUser } = useAuthStore((s) => s);
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+  const onRegister = async (form: FormData) => {
+    const payload: UserRequest = {
+      email: form.get("email") as string,
+      password: form.get("password") as string,
+    };
 
     try {
-      const user = await registerUser({ email, password });
-      setUser(user);
-      router.push("/profile");
+      const newUser = await register(payload);
+
+      if (newUser) {
+        setUser(newUser);
+        push("/profile");
+      } else {
+        setMessage("Invalid email or password");
+      }
     } catch (err) {
-      const axiosError = err as AxiosError<{ message: string }>;
-      const errorMessage =
-        axiosError.response?.data?.message ||
-        "Registration failed. Please try again.";
-      setError(errorMessage);
+      console.error("Sign-up failed:", err);
+      setMessage("Something went wrong. Try again.");
     }
   };
 
   return (
-    <main className={css.mainContent}>
-      <form className={css.form} onSubmit={handleSubmit} noValidate>
-        <h1 className={css.formTitle}>Sign up</h1>
-        <div className={css.formGroup}>
+    <main className={styles.mainContent}>
+      <form action={onRegister} className={styles.form}>
+        <header className={styles.formTitle}>Sign up</header>
+
+        <section className={styles.formGroup}>
           <label htmlFor="email">Email</label>
           <input
-            id="email"
+            className={styles.input}
             type="email"
             name="email"
-            className={css.input}
+            id="email"
             required
           />
-        </div>
-        <div className={css.formGroup}>
+        </section>
+
+        <section className={styles.formGroup}>
           <label htmlFor="password">Password</label>
           <input
-            id="password"
+            className={styles.input}
             type="password"
             name="password"
-            className={css.input}
+            id="password"
             required
           />
-        </div>
-        <div className={css.actions}>
-          <button type="submit" className={css.submitButton}>
+        </section>
+
+        {message && <div className={styles.error}>{message}</div>}
+
+        <footer className={styles.actions}>
+          <button type="submit" className={styles.submitButton}>
             Register
           </button>
-        </div>
-        {error && <p className={css.error}>{error}</p>}
+        </footer>
       </form>
     </main>
   );
-}
+};
+
+export default SignUpPage;

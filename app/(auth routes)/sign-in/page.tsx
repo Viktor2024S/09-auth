@@ -1,68 +1,76 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
-import { loginUser } from "@/lib/api/clientApi";
-import css from "./SignInPage.module.css";
-import { AxiosError } from "axios";
+import { login } from "@/lib/api/clientApi";
+import { UserRequest } from "@/types/user";
+import { useState } from "react";
+import styles from "./SignInPage.module.css";
 
-export default function SignInPage() {
-  const router = useRouter();
-  const { setUser } = useAuthStore();
-  const [error, setError] = useState("");
+const SignInPage = () => {
+  const auth = useAuthStore((s) => s.setUser);
+  const { push: navigate } = useRouter();
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
+  const [msg, setMsg] = useState("");
 
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+  const onSubmit = async (form: FormData) => {
+    const userData: UserRequest = {
+      email: form.get("email") as string,
+      password: form.get("password") as string,
+    };
 
     try {
-      const user = await loginUser({ email, password });
-      setUser(user);
-      router.push("/profile");
-    } catch (err) {
-      const axiosError = err as AxiosError<{ message: string }>;
-      const errorMessage =
-        axiosError.response?.data?.message || "Login failed. Please try again.";
-      setError(errorMessage);
+      const user = await login(userData);
+
+      if (user) {
+        auth(user);
+        navigate("/profile");
+      } else {
+        setMsg("Invalid email or password");
+      }
+    } catch (e) {
+      console.error("Login failed:", e);
+      setMsg("Something went wrong. Try again.");
     }
   };
 
   return (
-    <main className={css.mainContent}>
-      <form className={css.form} onSubmit={handleSubmit} noValidate>
-        <h1 className={css.formTitle}>Sign in</h1>
-        <div className={css.formGroup}>
+    <main className={styles.mainContent}>
+      <form action={onSubmit} className={styles.form}>
+        <header className={styles.formTitle}>Sign in</header>
+
+        <section className={styles.formGroup}>
           <label htmlFor="email">Email</label>
           <input
-            id="email"
+            required
             type="email"
             name="email"
-            className={css.input}
-            required
+            id="email"
+            className={styles.input}
           />
-        </div>
-        <div className={css.formGroup}>
+        </section>
+
+        <section className={styles.formGroup}>
           <label htmlFor="password">Password</label>
           <input
-            id="password"
+            required
             type="password"
             name="password"
-            className={css.input}
-            required
+            id="password"
+            className={styles.input}
           />
-        </div>
-        <div className={css.actions}>
-          <button type="submit" className={css.submitButton}>
+        </section>
+
+        {!!msg && <div className={styles.error}>{msg}</div>}
+
+        <footer className={styles.actions}>
+          <button className={styles.submitButton} type="submit">
             Log in
           </button>
-        </div>
-        {error && <p className={css.error}>{error}</p>}
+        </footer>
       </form>
     </main>
   );
-}
+};
+
+export default SignInPage;

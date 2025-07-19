@@ -1,26 +1,39 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
-import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
-import AuthProvider from "@/components/AuthProvider/AuthProvider";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
-import "modern-normalize/modern-normalize.css";
 import "./globals.css";
+import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
+import AuthProvider from "../components/AuthProvider/AuthProvider";
 
 const roboto = Roboto({
-  weight: ["400", "700"],
-  subsets: ["latin", "cyrillic"],
-  display: "swap",
   variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: {
-    template: "%s | NoteHub",
-    default: "NoteHub",
-  },
+  title: "NoteHub — Smart Note-Taking App",
   description:
-    "A simple and efficient application for managing personal notes.",
+    "NoteHub is a modern web application for creating, editing, and organizing your notes effortlessly. Keep track of your ideas, reminders, and to-do lists in one secure, accessible place.",
+  openGraph: {
+    title: "NoteHub — Smart Note-Taking App",
+    description:
+      "Easily create, manage, and organize your notes online with NoteHub. A clean interface and powerful features designed to boost your productivity.",
+    url: "https://09-auth-ruddy-nine.vercel.app/",
+    images: [
+      {
+        url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+        width: 1200,
+        height: 630,
+        alt: "NoteHub — app got notes",
+      },
+    ],
+  },
+  icons: {
+    icon: "/title-web.ico",
+  },
 };
 
 export default function RootLayout({
@@ -32,13 +45,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={roboto.variable}>
+      <body className={`${roboto.variable}`}>
         <TanStackProvider>
           <AuthProvider>
             <Header />
-            <main className="main-content">{children}</main>
+            <main>
+              {children}
+              {modal}
+            </main>
             <Footer />
-            {modal}
           </AuthProvider>
         </TanStackProvider>
       </body>

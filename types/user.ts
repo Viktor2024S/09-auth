@@ -1,18 +1,14 @@
 export interface User {
-  _id: string;
-  username: string;
-  email: string;
   avatar: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface UserAuth {
   email: string;
-  password?: string;
+  username: string;
 }
 
-export interface UserUpdate {
-  username?: string;
-  avatar?: string;
+export interface UserRequest {
+  password: string;
+  email: string;
+}
+
+export interface CheckSessionResponse {
+  message: string;
 }

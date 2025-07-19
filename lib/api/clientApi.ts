@@ -1,56 +1,83 @@
-import instance from "./api";
-import { User, UserAuth, UserUpdate } from "@/types/user";
-import { Note, PaginatedNotesResponse, Tag } from "@/types/note";
+import type { Note, NewNote, NotesResponse } from "@/types/note";
+import { nextServer } from "./api";
+import { User } from "@/types/user";
+import { UserRequest, CheckSessionResponse } from "@/types/user";
+import { AxiosError } from "axios";
 
-export const registerUser = async (credentials: UserAuth): Promise<User> => {
-  const { data } = await instance.post<User>("/auth/register", credentials);
+export const fetchNotes = async (
+  query: string,
+  pageNum = 1,
+  perPageCount = 10,
+  tagFilter?: string
+): Promise<NotesResponse> => {
+  const params = {
+    ...(query !== "" && { search: query }),
+    page: pageNum,
+    perPage: perPageCount,
+    ...(tagFilter && tagFilter !== "All" && { tag: tagFilter }),
+  };
+
+  const { data } = await nextServer.get<NotesResponse>("/notes", { params });
   return data;
 };
 
-export const loginUser = async (credentials: UserAuth): Promise<User> => {
-  const { data } = await instance.post<User>("/auth/login", credentials);
+export const createNote = async (payload: NewNote): Promise<Note> => {
+  const { data } = await nextServer.post<Note>("/notes", payload);
   return data;
 };
 
-export const logoutUser = async (): Promise<void> => {
-  await instance.post("/auth/logout");
-};
-
-export const checkSession = async (): Promise<User> => {
-  const { data } = await instance.get<User>("/auth/session");
+export const deleteNote = async (noteId: string): Promise<Note> => {
+  const { data } = await nextServer.delete<Note>(`/notes/${noteId}`);
   return data;
 };
 
-export const fetchCurrentUser = async (): Promise<User> => {
-  const { data } = await instance.get<User>("/users/me");
+export const fetchNoteById = async (noteId: string): Promise<Note> => {
+  const { data } = await nextServer.get<Note>(`/notes/${noteId}`);
   return data;
 };
 
-export const updateUser = async (updatedFields: UserUpdate): Promise<User> => {
-  const { data } = await instance.patch<User>("/users/me", updatedFields);
-  return data;
+export const register = async (credentials: UserRequest): Promise<User> => {
+  const response = await nextServer.post<User>("/auth/register", credentials);
+  return response.data;
 };
 
-export const clientFetchNotes = async (
-  page: number = 1,
-  query: string = "",
-  tag: Tag | "All" = "All"
-): Promise<PaginatedNotesResponse> => {
-  const params = new URLSearchParams();
-  params.append("page", page.toString());
-  if (query) {
-    params.append("query", query);
+export const login = async (credentials: UserRequest): Promise<User> => {
+  const response = await nextServer.post<User>("/auth/login", credentials);
+  return response.data;
+};
+
+export const logout = async (): Promise<void> => {
+  await nextServer.post("/auth/logout");
+};
+
+export const checkSession = async (): Promise<{
+  success: boolean;
+  message: string;
+}> => {
+  try {
+    const { data, status } =
+      await nextServer.get<CheckSessionResponse>("/auth/session");
+    return { success: status === 200, message: data.message };
+  } catch (err) {
+    const axiosErr = err as AxiosError<{ message: string }>;
+    if (
+      axiosErr.response?.status === 400 ||
+      axiosErr.response?.status === 401
+    ) {
+      return { success: false, message: axiosErr.response.data.message };
+    }
+    throw err;
   }
-  if (tag !== "All") {
-    params.append("tag", tag);
-  }
-  const { data } = await instance.get<PaginatedNotesResponse>(
-    `/notes?${params.toString()}`
-  );
+};
+
+export const getMe = async (): Promise<User> => {
+  const { data } = await nextServer.get<User>("/users/me");
   return data;
 };
 
-export const clientFetchNoteById = async (id: string): Promise<Note> => {
-  const { data } = await instance.get<Note>(`/notes/${id}`);
-  return data;
+export const updateUser = async (update: {
+  username: string;
+}): Promise<User> => {
+  const response = await nextServer.patch<User>("/users/me", update);
+  return response.data;
 };

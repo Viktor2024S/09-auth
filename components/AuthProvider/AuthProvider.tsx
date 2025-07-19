@@ -1,37 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { checkSession, getMe } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
-import { checkSession } from "@/lib/api/clientApi";
-import Loader from "@/components/Loader/Loader";
 
-type AuthProviderProps = {
+type Props = {
   children: React.ReactNode;
 };
 
-const AuthProvider = ({ children }: AuthProviderProps) => {
-  const { setUser, clearIsAuthenticated } = useAuthStore();
-  const [isLoading, setIsLoading] = useState(true);
+const AuthProvider = ({ children }: Props) => {
+  const setUser = useAuthStore((s) => s.setUser);
+  const clearAuth = useAuthStore((s) => s.clearIsAuthenticated);
 
   useEffect(() => {
-    const checkUserSession = async () => {
+    async function verifyUser() {
       try {
-        const user = await checkSession();
-        setUser(user);
-      } catch (error) {
-        console.error("Failed to check user session:", error);
-        clearIsAuthenticated();
-      } finally {
-        setIsLoading(false);
+        const session = await checkSession();
+
+        if (session.success) {
+          const currentUser = await getMe();
+          if (currentUser) {
+            setUser(currentUser);
+          }
+        } else {
+          clearAuth();
+        }
+      } catch (err) {
+        clearAuth();
+        console.error("Failed to verify authentication:", err);
       }
-    };
+    }
 
-    checkUserSession();
-  }, [setUser, clearIsAuthenticated]);
-
-  if (isLoading) {
-    return <Loader />;
-  }
+    verifyUser();
+  }, [clearAuth, setUser]);
 
   return <>{children}</>;
 };
