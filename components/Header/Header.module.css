@@ -19,7 +19,7 @@
 .logo {
   text-decoration: none;
   color: #ffffff;
-  font-size: 1.5rem;
+  font-size: 1.5rem; /* 24px */
   font-weight: bold;
   transition: color 0.2s ease;
 }
@@ -29,12 +29,18 @@
 }
 
 .navigation {
+}
+
+.navList {
   list-style-type: none;
   margin: 0;
   padding: 0;
   display: flex;
   align-items: center;
   gap: 24px;
+}
+
+.navigationItem {
 }
 
 .link {

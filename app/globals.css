@@ -1,15 +1,29 @@
+html,
+body {
+  height: 100%; /* Гарантуємо, що html і body займають всю висоту вікна */
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: var(--font-roboto), sans-serif;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  margin: 0;
   background-color: #f8f9fa;
   color: #212529;
+  /* Видаляємо Flexbox-стилі з body, оскільки вони переміщені на .app-layout-container */
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* min-height: 100vh; */
+}
+
+/* Новий клас для обгортаючого div у layout.tsx */
+.app-layout-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Забезпечує, що контейнер займає всю висоту вікна */
 }
 
 .main-content {
-  flex-grow: 1;
+  flex-grow: 1; /* Дозволяє main займати весь доступний простір, відштовхуючи футер вниз */
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;

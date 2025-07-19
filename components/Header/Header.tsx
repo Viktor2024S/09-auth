@@ -13,24 +13,26 @@ const Header = () => {
 
   return (
     <header className={styles.header}>
-      <Link href="/" aria-label="Home" className={styles.headerLink}>
-        NoteHub
-      </Link>
-      <nav className={styles.navigation} aria-label="Main Navigation">
-        <ul className={styles.navList}>
-          <li className={styles.navigationItem}>
-            <Link href={landingPage} className={styles.navigationLink}>
-              Home
-            </Link>
-          </li>
-          {authStatus && (
+      <div className={styles.container}>
+        <Link href="/" aria-label="Home" className={styles.logo}>
+          NoteHub
+        </Link>
+        <nav className={styles.navigation} aria-label="Main Navigation">
+          <ul className={styles.navList}>
             <li className={styles.navigationItem}>
-              <TagsMenu />
+              <Link href={landingPage} className={styles.link}>
+                Home
+              </Link>
             </li>
-          )}
-          <AuthNavigation />
-        </ul>
-      </nav>
+            {authStatus && (
+              <li className={styles.navigationItem}>
+                <TagsMenu />
+              </li>
+            )}
+            <AuthNavigation />
+          </ul>
+        </nav>
+      </div>
     </header>
   );
 };
