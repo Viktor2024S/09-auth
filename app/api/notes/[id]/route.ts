@@ -1,81 +1,76 @@
-import { NextResponse } from 'next/server';
-import { api } from '../../api';
-import { cookies } from 'next/headers';
-import { logErrorResponse } from '../../_utils/utils';
-import { isAxiosError } from 'axios';
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { api } from "@/app/api/api";
 
 type Props = {
   params: Promise<{ id: string }>;
 };
 
-export async function GET(request: Request, { params }: Props) {
+export async function GET(_: Request, { params }: Props) {
+  const cookieBox = await cookies();
+  const { id } = await params;
+
   try {
-    const cookieStore = await cookies();
-    const { id } = await params;
-    const res = await api(`/notes/${id}`, {
+    const response = await api(`/notes/${id}`, {
       headers: {
-        Cookie: cookieStore.toString(),
+        Cookie: cookieBox.toString(),
       },
     });
-    return NextResponse.json(res.data, { status: res.status });
-  } catch (error) {
-    if (isAxiosError(error)) {
-      logErrorResponse(error.response?.data);
-      return NextResponse.json(
-        { error: error.message, response: error.response?.data },
-        { status: error.status }
-      );
-    }
-    logErrorResponse({ message: (error as Error).message });
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+
+    return NextResponse.json(response.data);
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to fetch note" },
+      { status: 500 }
+    );
   }
 }
 
-export async function DELETE(request: Request, { params }: Props) {
-  try {
-    const cookieStore = await cookies();
-    const { id } = await params;
+export async function DELETE(_: Request, { params }: Props) {
+  const cookiesList = await cookies();
+  const { id } = await params;
 
-    const res = await api.delete(`/notes/${id}`, {
+  try {
+    await api.delete(`/notes/${id}`, {
       headers: {
-        Cookie: cookieStore.toString(),
+        Cookie: cookiesList.toString(),
       },
     });
-    return NextResponse.json(res.data, { status: res.status });
-  } catch (error) {
-    if (isAxiosError(error)) {
-      logErrorResponse(error.response?.data);
-      return NextResponse.json(
-        { error: error.message, response: error.response?.data },
-        { status: error.status }
-      );
-    }
-    logErrorResponse({ message: (error as Error).message });
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+
+    return NextResponse.json(
+      { message: "Note deleted successfully" },
+      { status: 200 }
+    );
+  } catch (err) {
+    console.error("Delete operation error:", err);
+    return NextResponse.json(
+      { error: "Failed to delete note" },
+      { status: 500 }
+    );
   }
 }
 
-export async function PATCH(request: Request, { params }: Props) {
-  try {
-    const cookieStore = await cookies();
-    const { id } = await params;
-    const body = await request.json();
+export async function PATCH(req: Request, { params }: Props) {
+  const cookieData = await cookies();
+  const { id } = await params;
 
-    const res = await api.patch(`/notes/${id}`, body, {
+  try {
+    const updatedNote = await req.json();
+
+    const response = await api.patch(`/notes/${id}`, updatedNote, {
       headers: {
-        Cookie: cookieStore.toString(),
+        Cookie: cookieData.toString(),
       },
     });
-    return NextResponse.json(res.data, { status: res.status });
-  } catch (error) {
-    if (isAxiosError(error)) {
-      logErrorResponse(error.response?.data);
-      return NextResponse.json(
-        { error: error.message, response: error.response?.data },
-        { status: error.status }
-      );
-    }
-    logErrorResponse({ message: (error as Error).message });
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+
+    return response.data
+      ? NextResponse.json(response.data)
+      : NextResponse.json({ error: "Failed to update note" }, { status: 500 });
+  } catch (e) {
+    console.log("Patch error:", e);
+    return NextResponse.json(
+      { error: "Failed to update note" },
+      { status: 500 }
+    );
   }
 }

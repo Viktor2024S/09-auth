@@ -1,35 +1,46 @@
-import { useQuery } from "@tanstack/react-query";
-import { clientFetchNoteById } from "@/lib/api/clientApi";
-import Loader from "@/components/Loader/Loader";
-import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
+"use client";
 
-interface NoteDetailsProps {
+import { useQuery } from "@tanstack/react-query";
+import styles from "./NoteDetails.module.css";
+import { fetchNoteById } from "@/lib/api/clientApi";
+
+interface NoteDetailsClientProps {
   noteId: string;
 }
 
-export default function NoteDetails({ noteId }: NoteDetailsProps) {
+const NoteDetailsClient = ({ noteId }: NoteDetailsClientProps) => {
   const {
-    data: note,
-    isLoading,
-    isError,
-    error,
+    data: noteData,
+    isLoading: pending,
+    error: fetchError,
   } = useQuery({
     queryKey: ["note", noteId],
-    queryFn: () => clientFetchNoteById(noteId),
+    queryFn: () => fetchNoteById(noteId),
+    refetchOnMount: false,
   });
 
-  if (isLoading) return <Loader />;
-  if (isError)
-    return (
-      <ErrorMessage displayMessage={error?.message || "An error occurred."} />
-    );
-  if (!note)
-    return <ErrorMessage displayMessage="Note details not available." />;
+  if (pending) {
+    return <p>Loading, please wait...</p>;
+  }
+
+  if (fetchError || !noteData) {
+    return <p>Something went wrong.</p>;
+  }
+
+  const displayDate = noteData.createdAt ?? noteData.updatedAt;
 
   return (
-    <div>
-      <h1>{note.title}</h1>
-      <p>{note.content}</p>
-    </div>
+    <section className={styles.container}>
+      <article className={styles.item}>
+        <header className={styles.header}>
+          <h2>{noteData.title}</h2>
+          <button className={styles.editBtn}>Edit note</button>
+        </header>
+        <p className={styles.content}>{noteData.content}</p>
+        <footer className={styles.date}>Created: {displayDate}</footer>
+      </article>
+    </section>
   );
-}
+};
+
+export default NoteDetailsClient;

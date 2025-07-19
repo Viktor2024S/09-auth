@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     title: "NoteHub: Sign up",
     description:
       "Create a free account and start organizing your notes with NoteHub.",
-    url: "https://09-auth-pi.vercel/sign-up",
+    url: "https://09-auth-ruddy-nine.vercel.app/sign-up",
     siteName: "NoteHub",
     images: [
       {
@@ -23,7 +23,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "NoteHub: Sign up",
-    description: "Create your NoteHub account and start managing your notes.",
+    description:
+      "Create your NoteHub account and start managing your notes efectively.",
     images: ["https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"],
   },
 };

@@ -2,12 +2,13 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "NoteHub: Sign in",
-  description: "Sign in to your NoteHub account and manage your notes easily.",
+  description:
+    "Sign in to your NoteHub account and manage your notes efectively.",
   openGraph: {
     title: "NoteHub: Sign in",
     description:
       "Sign in to your NoteHub account and manage your notes easily.",
-    url: "https://09-auth-pi.vercel/sign-up",
+    url: "https://09-auth-ruddy-nine.vercel.app/sign-in",
     siteName: "NoteHub",
     images: [
       {

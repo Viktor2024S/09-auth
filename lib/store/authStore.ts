@@ -1,31 +1,37 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { NewNote } from "../../types/note";
+import { User } from "@/types/user";
 
-type NoteDraftStore = {
-  draft: NewNote;
-  setDraft: (note: NewNote) => void;
-  clearDraft: () => void;
-};
+export interface AuthStore {
+  isAuthenticated: boolean;
+  user: User | null;
 
-const defaultDraft: NewNote = {
-  title: "",
-  content: "",
-  tag: "Todo",
-};
+  setUser: (user: User) => void;
 
-export const useNoteDraftStore = create<NoteDraftStore>()(
+  clearIsAuthenticated: () => void;
+}
+
+export const useAuthStore = create<AuthStore>()(
   persist(
     (update) => ({
-      draft: defaultDraft,
+      isAuthenticated: false,
+      user: null,
+      setUser: (userObj: User) => {
+        update(() => ({
+          user: userObj,
+          isAuthenticated: true,
+        }));
+      },
 
-      setDraft: (newDraft) => update(() => ({ draft: newDraft })),
-
-      clearDraft: () => update(() => ({ draft: defaultDraft })),
+      clearIsAuthenticated: () => {
+        update(() => ({
+          user: null,
+          isAuthenticated: false,
+        }));
+      },
     }),
     {
-      name: "note-draft",
-      partialize: (state) => ({ draft: state.draft }),
+      name: "auth-storage",
     }
   )
 );
