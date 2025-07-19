@@ -28,8 +28,8 @@
   color: #adb5bd;
 }
 
-.navigation {
-}
+/* .navigation {
+} */
 
 .navList {
   list-style-type: none;
@@ -40,8 +40,8 @@
   gap: 24px;
 }
 
-.navigationItem {
-}
+/* .navigationItem {
+} */
 
 .link {
   text-decoration: none;
