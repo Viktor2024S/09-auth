@@ -1,75 +1,74 @@
-"use client";
-
+// !
+import Image from "next/image";
 import Link from "next/link";
-// import Image from "next/image";
-import css from "./ProfilePage.module.css";
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/lib/store/authStore";
-import { useRouter } from "next/navigation";
-import { fetchCurrentUser } from "@/lib/api/clientApi";
-export default function ProfilePage() {
-  const { user: authUser, setUser, clearIsAuthenticated } = useAuthStore();
-  const router = useRouter();
-  const [currentUser, setCurrentUser] = useState(authUser);
-  const [loading, setLoading] = useState(true);
+import { getUserFromServer } from "@/lib/api/serverApi";
+import styles from "./ProfilePage.module.css";
+import type { Metadata } from "next";
 
-  useEffect(() => {
-    const getUserProfile = async () => {
-      if (!authUser) {
-        try {
-          const fetchedUser = await fetchCurrentUser();
-          setUser(fetchedUser);
-          setCurrentUser(fetchedUser);
-        } catch (error) {
-          console.error(
-            "Failed to fetch current user, redirecting to sign-in:",
-            error
-          );
-          clearIsAuthenticated();
-          router.push("/sign-in");
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    };
+export async function generateMetadata(): Promise<Metadata> {
+  const currentUser = await getUserFromServer();
 
-    getUserProfile();
-  }, [authUser, setUser, clearIsAuthenticated, router]);
-
-  if (loading) {
-    return <div>Loading profile...</div>;
-  }
-
-  if (!currentUser) {
-    router.push("/sign-in");
-    return null;
-  }
-
+  return {
+    title: `NoteHub — Profile: ${currentUser.username}`,
+    description: "Your personal profile page in NoteHub.",
+    openGraph: {
+      title: `Profile — ${currentUser.username}`,
+      description:
+        "Check your username, email, and avatar in your NoteHub profile.",
+      url: "https://09-auth-ruddy-nine.vercel.app/profile",
+      images: [
+        {
+          url:
+            currentUser.avatar ||
+            "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+          width: 1200,
+          height: 630,
+          alt: "User Avatar",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Profile — ${currentUser.username}`,
+      description: "Manage your personal profile details in NoteHub.",
+      images: [
+        currentUser.avatar ||
+          "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+      ],
+    },
+  };
+}
+const ProfilePage = async () => {
+  const currentUser = await getUserFromServer();
   return (
-    <main className={css.mainContent}>
-      <div className={css.profileCard}>
-        <h1 className={css.formTitle}>Profile Page</h1>
-        <div className={css.header}>
-          <Link href="/profile/edit" className={css.editProfileButton}>
+    <main className={styles.mainContent}>
+      <section className={styles.profileCard}>
+        <header className={styles.header}>
+          <h1 className={styles.formTitle}>Profile Page</h1>
+          <Link href="/profile/edit" className={styles.editProfileButton}>
             Edit Profile
           </Link>
-        </div>
-        {/* <div className={css.avatarWrapper}>
+        </header>
+        <div className={styles.avatarWrapper}>
           <Image
-            src={currentUser?.avatar || "/default-avatar.png"}
+            src={
+              currentUser?.avatar ||
+              "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"
+            }
             alt="User Avatar"
             width={120}
             height={120}
-            className={css.avatar}
+            className={styles.avatar}
+            priority
           />
-        </div> */}
-        <div className={css.profileInfo}>
-          <p>Username: {currentUser?.username}</p>
-          <p>Email: {currentUser?.email}</p>
         </div>
-      </div>
+        <section className={styles.profileInfo}>
+          <p>Username: {currentUser?.username || "your_username"}</p>
+          <p>Email: {currentUser?.email || "your_email@example.com"}</p>
+        </section>
+      </section>
     </main>
   );
-}
+};
+
+export default ProfilePage;

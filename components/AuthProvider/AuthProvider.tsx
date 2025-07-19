@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { checkSession, getMe } from "@/lib/api/clientApi";
+import { getMe, checkSession } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 
 type Props = {
@@ -9,30 +9,32 @@ type Props = {
 };
 
 const AuthProvider = ({ children }: Props) => {
-  const setUser = useAuthStore((s) => s.setUser);
-  const clearAuth = useAuthStore((s) => s.clearIsAuthenticated);
+  const setUserData = useAuthStore((state) => state.setUser);
+
+  const resetAuth = useAuthStore((state) => state.clearIsAuthenticated);
 
   useEffect(() => {
     async function verifyUser() {
       try {
-        const session = await checkSession();
+        const sessionStatus = await checkSession();
 
-        if (session.success) {
+        if (sessionStatus.success) {
           const currentUser = await getMe();
+
           if (currentUser) {
-            setUser(currentUser);
+            setUserData(currentUser);
           }
         } else {
-          clearAuth();
+          resetAuth();
         }
       } catch (err) {
-        clearAuth();
+        resetAuth();
         console.error("Failed to verify authentication:", err);
       }
     }
 
     verifyUser();
-  }, [clearAuth, setUser]);
+  }, [setUserData, resetAuth]);
 
   return <>{children}</>;
 };
