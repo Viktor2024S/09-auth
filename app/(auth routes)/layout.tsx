@@ -1,21 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Loader } from "@/components/Loader/Loader";
+import { useAuthStore } from "@/lib/store/authStore";
 import { useRouter } from "next/navigation";
-import Loader from "@/components/Loader/Loader";
+import { useState, useEffect } from "react";
 
-type Props = {
+interface AuthLayoutProp {
   children: React.ReactNode;
-};
+}
 
-export default function AuthLayout({ children }: Props) {
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+const AuthLayout = ({ children }: AuthLayoutProp) => {
+  const navigation = useRouter();
+  const resetAuth = useAuthStore((state) => state.clearIsAuthenticated);
+  const [isBusy, toggleBusy] = useState(true);
 
   useEffect(() => {
-    router.refresh();
-    setLoading(false);
-  }, [router]);
+    resetAuth();
+    navigation.refresh();
+    toggleBusy(false);
+  }, [resetAuth, navigation]);
 
-  return <>{loading ? <Loader /> : children}</>;
-}
+  return isBusy ? <Loader /> : <>{children}</>;
+};
+
+export default AuthLayout;
