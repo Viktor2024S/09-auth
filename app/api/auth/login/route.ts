@@ -1,44 +1,39 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { api } from '../../api';
-import { cookies } from 'next/headers';
-import { parse } from 'cookie';
-import { isAxiosError } from 'axios';
-import { logErrorResponse } from '../../_utils/utils';
+import { NextResponse, NextRequest } from "next/server";
+import { parse } from "cookie";
+import { cookies } from "next/headers";
+import { api } from "@/app/api/api";
 
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const apiRes = await api.post('auth/login', body);
+  const payload = await req.json();
+  const response = await api.post("auth/login", payload);
+  const cookieJar = await cookies();
+  const rawCookies = response.headers["set-cookie"];
 
-    const cookieStore = await cookies();
-    const setCookie = apiRes.headers['set-cookie'];
-
-    if (setCookie) {
-      const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
-      for (const cookieStr of cookieArray) {
-        const parsed = parse(cookieStr);
-        const options = {
-          expires: parsed.Expires ? new Date(parsed.Expires) : undefined,
-          path: parsed.Path,
-          maxAge: Number(parsed['Max-Age']),
-        };
-        if (parsed.accessToken) cookieStore.set('accessToken', parsed.accessToken, options);
-        if (parsed.refreshToken) cookieStore.set('refreshToken', parsed.refreshToken, options);
-      }
-
-      return NextResponse.json(apiRes.data, { status: apiRes.status });
-    }
-
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  } catch (error) {
-    if (isAxiosError(error)) {
-      logErrorResponse(error.response?.data);
-      return NextResponse.json(
-        { error: error.message, response: error.response?.data },
-        { status: error.status }
-      );
-    }
-    logErrorResponse({ message: (error as Error).message });
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  if (!rawCookies) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const cookiesArray = Array.isArray(rawCookies) ? rawCookies : [rawCookies];
+
+  for (const cookieStr of cookiesArray) {
+    const parsedCookie = parse(cookieStr);
+
+    const cookieOptions = {
+      expires: parsedCookie.Expires
+        ? new Date(parsedCookie.Expires)
+        : undefined,
+
+      path: parsedCookie.Path,
+      maxAge: Number(parsedCookie["Max-Age"]),
+    };
+
+    if (parsedCookie.accessToken) {
+      cookieJar.set("accessToken", parsedCookie.accessToken, cookieOptions);
+    }
+    if (parsedCookie.refreshToken) {
+      cookieJar.set("refreshToken", parsedCookie.refreshToken, cookieOptions);
+    }
+  }
+
+  return NextResponse.json(response.data);
 }

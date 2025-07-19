@@ -1,20 +1,20 @@
+import { UserRequest, CheckSessionResponse } from "@/types/user";
 import type { Note, NewNote, NotesResponse } from "@/types/note";
 import { nextServer } from "./api";
 import { User } from "@/types/user";
-import { UserRequest, CheckSessionResponse } from "@/types/user";
 import { AxiosError } from "axios";
 
 export const fetchNotes = async (
   query: string,
-  pageNum = 1,
-  perPageCount = 10,
-  tagFilter?: string
+  currentPage = 1,
+  itemsPerPage = 10,
+  selectedTag?: string
 ): Promise<NotesResponse> => {
   const params = {
     ...(query !== "" && { search: query }),
-    page: pageNum,
-    perPage: perPageCount,
-    ...(tagFilter && tagFilter !== "All" && { tag: tagFilter }),
+    page: currentPage,
+    perPage: itemsPerPage,
+    ...(selectedTag && selectedTag !== "All" && { tag: selectedTag }),
   };
 
   const { data } = await nextServer.get<NotesResponse>("/notes", { params });
@@ -37,13 +37,13 @@ export const fetchNoteById = async (noteId: string): Promise<Note> => {
 };
 
 export const register = async (credentials: UserRequest): Promise<User> => {
-  const response = await nextServer.post<User>("/auth/register", credentials);
-  return response.data;
+  const res = await nextServer.post<User>("/auth/register", credentials);
+  return res.data;
 };
 
 export const login = async (credentials: UserRequest): Promise<User> => {
-  const response = await nextServer.post<User>("/auth/login", credentials);
-  return response.data;
+  const res = await nextServer.post<User>("/auth/login", credentials);
+  return res.data;
 };
 
 export const logout = async (): Promise<void> => {
@@ -78,6 +78,6 @@ export const getMe = async (): Promise<User> => {
 export const updateUser = async (update: {
   username: string;
 }): Promise<User> => {
-  const response = await nextServer.patch<User>("/users/me", update);
-  return response.data;
+  const res = await nextServer.patch<User>("/users/me", update);
+  return res.data;
 };
