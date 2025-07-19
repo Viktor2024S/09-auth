@@ -3,7 +3,6 @@
   max-width: 1280px;
   margin: 0px auto;
   padding: 0 16px 16px;
-  flex: 1;
 }
 
 .toolbar {
@@ -25,14 +24,9 @@
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  text-decoration: none;
 }
 
 .button:hover {
   background-color: #0b5ed7;
-}
-
-.paginationContainer {
-  margin-top: 24px;
-  display: flex;
-  justify-content: center;
 }

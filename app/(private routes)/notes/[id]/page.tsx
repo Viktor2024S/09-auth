@@ -7,25 +7,21 @@ import {
 import { Metadata } from "next";
 import { fetchNoteByIdServer } from "@/lib/api/serverApi";
 
-type Props = {
+interface Props {
   params: Promise<{ id: string }>;
-};
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const note = await fetchNoteByIdServer(id);
-
-  const baseUrl = "https://09-auth-pi.vercel.app/notes/";
-
   return {
     title: `Note: ${note.title}`,
     description: note.content.slice(0, 30),
     openGraph: {
-      type: "article",
-      siteName: "NoteHub",
-      url: `${baseUrl}${id}`,
       title: `Note: ${note.title}`,
       description: note.content.slice(0, 100),
+      url: `https://09-auth-ruddy-nine.vercel.app/notes/${id}`,
+      siteName: "NoteHub",
       images: [
         {
           url: "https://placehold.co/1200x630",
@@ -34,10 +30,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           alt: note.title,
         },
       ],
+      type: "article",
     },
     twitter: {
       card: "summary_large_image",
-      title: note.title,
+      title: `${note.title}`,
       description: note.content.slice(0, 3),
       images: ["https://ac.goit.global/fullstack/react/og-meta.jpg"],
     },
@@ -47,15 +44,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 const NoteDetails = async ({ params }: Props) => {
   const { id } = await params;
 
-  const cache = new QueryClient();
+  const queryClient = new QueryClient();
 
-  await cache.prefetchQuery({
+  await queryClient.prefetchQuery({
     queryKey: ["note", id],
     queryFn: () => fetchNoteByIdServer(id),
   });
 
   return (
-    <HydrationBoundary state={dehydrate(cache)}>
+    <HydrationBoundary state={dehydrate(queryClient)}>
       <NoteDetailsClient noteId={id} />
     </HydrationBoundary>
   );

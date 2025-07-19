@@ -1,0 +1,40 @@
+.menuList {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menuItem {
+  margin-bottom: 16px;
+}
+
+.menuLink {
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  display: block;
+  padding: 8px 16px;
+  transition: background-color 0.3s ease;
+}
+
+.menuLink:hover {
+  background-color: #444;
+  color: #ddd;
+}
+
+.notesLayout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.notesLayout aside {
+  background-color: #222;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.notesLayout div {
+  padding: 16px;
+  overflow: auto;
+}
