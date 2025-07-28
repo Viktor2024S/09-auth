@@ -1,16 +1,16 @@
 .header {
   width: 100%;
+  padding: 0 20px;
   padding: 16px 0;
   background-color: #343a40;
   border-bottom: 1px solid #495057;
 }
 
 .container {
-  max-width: 1200px;
-  width: 100%;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 0 15px;
-
+  min-width: 0;
+  padding: 10px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -19,17 +19,24 @@
 .logo {
   text-decoration: none;
   color: #ffffff;
-  font-size: 1.5rem; /* 24px */
+  font-size: 1.5rem;
   font-weight: bold;
   transition: color 0.2s ease;
+  flex: 0 1 auto;
+  min-width: 80px;
 }
 
 .logo:hover {
   color: #adb5bd;
 }
 
-/* .navigation {
-} */
+.navigation {
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+}
 
 .navList {
   list-style-type: none;
@@ -38,18 +45,89 @@
   display: flex;
   align-items: center;
   gap: 24px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
-
-/* .navigationItem {
-} */
 
 .link {
   text-decoration: none;
   color: #ffffff;
-  font-size: 1rem;
+  font-size: 1.1rem;
   transition: color 0.2s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .link:hover {
   color: #adb5bd;
+}
+
+@media (max-width: 999px) {
+  .logo {
+    font-size: 1.25rem;
+  }
+
+  .navList {
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .navList li a,
+  .navList li button {
+    font-size: 1rem;
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+    padding: 0 10px;
+  }
+  .header {
+    padding: 0 10px;
+  }
+
+  .logo {
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+  }
+
+  .navigation {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .navList {
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+  }
+  .navList li a,
+  .navList li button {
+    font-size: 0.9rem;
+    padding: 5px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 0px;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+  }
+
+  .navList {
+    gap: 5px;
+    justify-content: center;
+    width: 100%;
+  }
+  .navList li a,
+  .navList li button {
+    font-size: 0.8rem;
+    padding: 4px 6px;
+  }
 }
